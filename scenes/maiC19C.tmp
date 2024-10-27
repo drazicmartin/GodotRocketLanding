@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3 uid="uid://by62wxm63gyq2"]
+
+[ext_resource type="Texture2D" uid="uid://dqq60jx2hqtl6" path="res://assets/Space Background.png" id="2_w1nfm"]
+
+[node name="Main Menu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(580, 325)
+texture = ExtResource("2_w1nfm")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -118.0
+offset_top = -49.0
+offset_right = 118.0
+offset_bottom = 49.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Game VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Game" type="RichTextLabel" parent="HBoxContainer/Game VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+text = "Game
+"
+fit_content = true
+
+[node name="Start Button" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Start Simulation"
+
+[node name="Exit Button" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Exit"
+
+[node name="Server VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Server" type="RichTextLabel" parent="HBoxContainer/Server VBoxContainer"]
+layout_mode = 2
+text = "Server Settings
+"
+fit_content = true
+
+[node name="InputPortNumber" type="TextEdit" parent="HBoxContainer/Server VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "65000"
+placeholder_text = "65000"
+
+[node name="Listen Button" type="Button" parent="HBoxContainer/Server VBoxContainer"]
+layout_mode = 2
+text = "Start server"
+
+[node name="DebugMessage" type="TextEdit" parent="HBoxContainer/Server VBoxContainer"]
+layout_mode = 2
+text = "test"
+scroll_fit_content_height = true
+
+[node name="SendMessage" type="Button" parent="HBoxContainer/Server VBoxContainer"]
+layout_mode = 2
+text = "Send message"
+
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Button" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Exit Button" to="." method="_on_exit_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Server VBoxContainer/Listen Button" to="." method="_on_listen_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Server VBoxContainer/SendMessage" to="." method="_on_send_message_pressed"]
