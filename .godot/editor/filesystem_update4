@@ -1,2 +1,6 @@
 res://scenes/main_menu.tscn
-res://scripts/main_menu.gd
+res://scenes/main.tscn
+res://scenes/main.gd
+res://scenes/server.tscn
+res://scripts/server.gd
+res://scripts/rocket.gd

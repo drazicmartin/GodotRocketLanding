@@ -4,10 +4,15 @@ const MAX_TRUST_POWER = 100000000.0
 const RCS_TRUST_POWER = 20000000.0
 const VELOCITY_DESTRUCTION = 0.01
 
+var allow_one_step: bool
+
 var is_thrusting = false
 var is_rcs_left_on = false
 var is_rcs_right_on = false
 var was_on_ground = false
+var physics_count: int = 0
+
+signal rocket_physics_finished
 
 func _physics_process(delta):
 	# Check for player input to control the thruster
@@ -28,6 +33,7 @@ func _physics_process(delta):
 	if was_on_ground == false and is_on_ground():
 		was_on_ground = true
 		print(get_linear_velocity().length())
+		print(physics_count)
 		if get_linear_velocity().length() > VELOCITY_DESTRUCTION:
 			print("Lose rocket destroyed")
 		else:
@@ -36,6 +42,14 @@ func _physics_process(delta):
 		pass
 	else:
 		was_on_ground = false
+	
+	physics_count+=1
+
+func get_state():
+	return {
+		'position': position,
+		'velocity': linear_velocity,
+	}
 
 # Function to check if the player is on the ground
 func is_on_ground() -> bool:

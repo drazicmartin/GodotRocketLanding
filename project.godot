@@ -17,4 +17,4 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-WebSocketServer="*res://scripts/server.gd"
+WebSocketServer="*res://scenes/server.tscn"

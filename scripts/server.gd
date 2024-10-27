@@ -18,6 +18,8 @@ signal client_disconnected(peer_id: int)
 
 func _ready():
 	print("Server is ready and will persist across scenes.")
+	# Let the server alwais run even when game is paused
+	self.process_mode = Node.PROCESS_MODE_ALWAYS
 
 class PendingPeer:
 	var connect_time: int
@@ -137,7 +139,6 @@ func _connect_pending(p: PendingPeer) -> bool:
 		# Poll websocket client if doing handshake.
 		p.ws.poll()
 		var state := p.ws.get_ready_state()
-		print(state)
 		if state == WebSocketPeer.STATE_OPEN:
 			var id := randi_range(2, 1 << 30)
 			peers[id] = p.ws
