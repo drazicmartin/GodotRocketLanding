@@ -1,25 +1,26 @@
 ea4bc82a6ad023ab7ee23ee620429895
-::res://::1730051253
+::res://::1730142269
 icon.svg::CompressedTexture2D::771115607308817032::1730051207::1730051254::1::::<><>::
 README.md::TextFile::-1::1730051207::0::1::::<><>::
-::res://assets/::1730051207
+::res://assets/::1730051254
 Space Background.png::CompressedTexture2D::8317240974453575409::1730051207::1730051254::1::::<><>::
-::res://assets/construction kit/::1730051207
+::res://assets/construction kit/::1730051255
 ckitBevel.png::CompressedTexture2D::2416671619041526856::1730051207::1730051255::1::::<><>::
 ckitOrig.png::CompressedTexture2D::4583566152049039097::1730051207::1730051255::1::::<><>::
 lightOl.png::CompressedTexture2D::1831977035701689657::1730051207::1730051255::1::::<><>::
 lightOlBevel.png::CompressedTexture2D::6779201151357358236::1730051207::1730051255::1::::<><>::
 ::res://assets/construction kit/LayeredPSD/::1730051207
-::res://assets/rocket/::1730051207
+::res://assets/rocket/::1730051254
 rcs.png::CompressedTexture2D::6818604723287240541::1730051207::1730051254::1::::<><>::
 rocket_off.png::CompressedTexture2D::5344939130888581168::1730051207::1730051254::1::::<><>::
 rocket_on.png::CompressedTexture2D::2383123819854555468::1730051207::1730051254::1::::<><>::
-::res://python/::1730051207
-::res://scenes/::1730051207
-main.tscn::PackedScene::4611055883108191285::1730051207::0::1::::<><>::uid://dqq60jx2hqtl6::::res://assets/Space Background.png<>res://scripts/rocket.gd<>uid://87nx3rm7in2c::::res://assets/rocket/rocket_on.png<>uid://cifemp1cr4a8w::::res://assets/rocket/rocket_off.png<>uid://c4e8onwp1jq34::::res://assets/rocket/rcs.png<>uid://baowh1enmjr73::::res://assets/construction kit/ckitBevel.png
-main_menu.tscn::PackedScene::4136628515673219563::1730051207::0::1::::<><>::res://scripts/main_menu.gd<>uid://dqq60jx2hqtl6::::res://assets/Space Background.png
-server.tscn::PackedScene::599142165254605944::1730051207::0::1::::<><>::res://scripts/server.gd
-::res://scripts/::1730051207
+::res://python/::1730142247
+::res://scenes/::1730070840
+main.gd::GDScript::-1::1730068224::0::1::::<>Node2D<>::
+main.tscn::PackedScene::4611055883108191285::1730070840::0::1::::<><>::uid://dqq60jx2hqtl6::::res://assets/Space Background.png<>res://scenes/main.gd<>res://scripts/rocket.gd<>uid://87nx3rm7in2c::::res://assets/rocket/rocket_on.png<>uid://cifemp1cr4a8w::::res://assets/rocket/rocket_off.png<>uid://c4e8onwp1jq34::::res://assets/rocket/rcs.png<>uid://baowh1enmjr73::::res://assets/construction kit/ckitBevel.png
+main_menu.tscn::PackedScene::4136628515673219563::1730068227::0::1::::<><>::res://scripts/main_menu.gd<>uid://dqq60jx2hqtl6::::res://assets/Space Background.png
+server.tscn::PackedScene::599142165254605944::1730068227::0::1::::<><>::res://scripts/server.gd
+::res://scripts/::1730067982
 main_menu.gd::GDScript::-1::1730051207::0::1::::<>Control<>::
-rocket.gd::GDScript::-1::1730051207::0::1::::<>RigidBody2D<>::
-server.gd::GDScript::-1::1730051207::0::1::::NWebSocketServer<>Node<>::
+rocket.gd::GDScript::-1::1730067982::0::1::::<>RigidBody2D<>::
+server.gd::GDScript::-1::1730067360::0::1::::NWebSocketServer<>Node<>::
