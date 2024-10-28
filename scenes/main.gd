@@ -26,7 +26,8 @@ func send_state():
 	# Responding with a JSON message
 	var response = rocket.get_state()
 	var json_response = JSON.stringify(response)
-	WebSocketServer.send(self.peer_id, json_response)
+	if self.peer_id != null:
+		WebSocketServer.send(self.peer_id, json_response)
 
 func allow_one_physics_step() -> void:
 	# This method can be called externally or in response to some event

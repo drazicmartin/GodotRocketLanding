@@ -1,7 +1,4 @@
-res://scenes/main.tscn
-res://scenes/main.gd
-res://scripts/rocket.gd
 res://scenes/main_menu.tscn
+res://scenes/main.tscn
 res://scenes/server.tscn
-res://scripts/main_menu.gd
-res://scenes/node.gd
+res://scenes/main.gd
