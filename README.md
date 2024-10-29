@@ -1,5 +1,5 @@
-# Landing
-A simple programmable landing rocket environment
+# GodotRocketLanding (GRL)
+A simple programmable rocket landing environment
 
 ## Thanks
 - [Simon Celeste](https://github.com/Celeste-VANDAMME), for the design of the rocket !
