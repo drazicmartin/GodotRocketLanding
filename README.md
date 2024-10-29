@@ -1,2 +1,2 @@
-# Landing
- A simple programmable landing rocket environment
+# GodotRocketLanding (GRL)
+A simple programmable landing rocket environment
