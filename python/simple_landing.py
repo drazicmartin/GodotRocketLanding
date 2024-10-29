@@ -2,7 +2,6 @@ import asyncio
 import websockets
 import json
 
-
 class GRL:
     def __init__(self, uri):
         self.uri = uri
@@ -52,9 +51,9 @@ def process(state: dict):
     """
 
     inputs = {
-        "main_trust": 0.4,
-        "left_trust": 0,
-        "right_trust": 0
+        "main_thrust": 0,
+        "rcs_left_thrust": 0,
+        "rcs_right_thrust": 0
     }
 
     print(state)

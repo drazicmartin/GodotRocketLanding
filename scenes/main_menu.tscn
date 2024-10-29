@@ -25,29 +25,33 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -118.0
-offset_top = -49.0
-offset_right = 118.0
-offset_bottom = 49.0
+offset_left = -363.0
+offset_top = -132.0
+offset_right = 385.0
+offset_bottom = 15.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Game VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
+size_flags_horizontal = 3
 
 [node name="Game" type="RichTextLabel" parent="HBoxContainer/Game VBoxContainer"]
 custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
+theme_override_font_sizes/normal_font_size = 30
 text = "Game
 "
 fit_content = true
 
-[node name="Start Button" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+[node name="Start Random levelButton" type="Button" parent="HBoxContainer/Game VBoxContainer"]
 layout_mode = 2
-text = "Start Simulation"
+text = "Start Random Level"
+
+[node name="Start Level 1" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Level 1"
 
 [node name="Exit Button" type="Button" parent="HBoxContainer/Game VBoxContainer"]
 layout_mode = 2
@@ -56,10 +60,11 @@ text = "Exit"
 [node name="Server VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_horizontal = 3
 
 [node name="Server" type="RichTextLabel" parent="HBoxContainer/Server VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/normal_font_size = 30
 text = "Server Settings
 "
 fit_content = true
@@ -70,20 +75,53 @@ layout_mode = 2
 text = "65000"
 placeholder_text = "65000"
 
-[node name="Listen Button" type="Button" parent="HBoxContainer/Server VBoxContainer"]
-layout_mode = 2
-text = "Start server"
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 232.0
+offset_top = 394.0
+offset_right = 944.0
+offset_bottom = 492.0
+alignment = 1
 
-[node name="DebugMessage" type="TextEdit" parent="HBoxContainer/Server VBoxContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
-text = "test"
-scroll_fit_content_height = true
+size_flags_vertical = 6
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "[center] Rocket Control Mode"
+fit_content = true
 
-[node name="SendMessage" type="Button" parent="HBoxContainer/Server VBoxContainer"]
+[node name="Select Mode" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-text = "Send message"
 
-[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Button" to="." method="_on_start_button_pressed"]
+[node name="Manual" type="RichTextLabel" parent="VBoxContainer/Select Mode"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "[center]Manual[/center]"
+fit_content = true
+
+[node name="CheckButton" type="CheckButton" parent="VBoxContainer/Select Mode"]
+layout_mode = 2
+alignment = 1
+
+[node name="Script" type="RichTextLabel" parent="VBoxContainer/Select Mode"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "[center] Script [/center]"
+fit_content = true
+
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Random levelButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Level 1" to="." method="_on_start_level_1_pressed"]
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Exit Button" to="." method="_on_exit_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Server VBoxContainer/Listen Button" to="." method="_on_listen_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Server VBoxContainer/SendMessage" to="." method="_on_send_message_pressed"]
+[connection signal="button_down" from="VBoxContainer/Select Mode/CheckButton" to="." method="_on_check_button_button_down"]
+[connection signal="button_up" from="VBoxContainer/Select Mode/CheckButton" to="." method="_on_check_button_button_up"]
+[connection signal="toggled" from="VBoxContainer/Select Mode/CheckButton" to="." method="_on_check_button_toggled"]
