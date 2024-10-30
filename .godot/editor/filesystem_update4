@@ -1,7 +1,6 @@
 res://scenes/main.tscn
-res://scripts/main.gd
-res://scripts/rocket.gd
 res://scenes/main_menu.tscn
 res://scenes/server.tscn
 res://scenes/level_1.tscn
 res://scenes/random_level.tscn
+res://scripts/rocket.gd

@@ -1,9 +1,10 @@
 ea4bc82a6ad023ab7ee23ee620429895
-::res://::1730243859
+::res://::1730313623
 icon.svg::CompressedTexture2D::771115607308817032::1730051207::1730051254::1::::<><>::
-README.md::TextFile::-1::1730243613::0::1::::<><>::
-::res://assets/::1730231536
+README.md::TextFile::-1::1730244669::0::1::::<><>::
+::res://assets/::1730244707
 Space Background.png::CompressedTexture2D::8317240974453575409::1730051207::1730051254::1::::<><>::
+thumbnail.png::CompressedTexture2D::6235392680209512689::1730244288::1730244707::1::::<><>::
 ::res://assets/construction kit/::1730051255
 ckitBevel.png::CompressedTexture2D::2416671619041526856::1730051207::1730051255::1::::<><>::
 ckitOrig.png::CompressedTexture2D::4583566152049039097::1730051207::1730051255::1::::<><>::
@@ -112,16 +113,16 @@ rcs.png::CompressedTexture2D::6818604723287240541::1730051207::1730051254::1::::
 rocket_off.png::CompressedTexture2D::5344939130888581168::1730051207::1730051254::1::::<><>::
 rocket_on.png::CompressedTexture2D::2383123819854555468::1730051207::1730051254::1::::<><>::
 ::res://python/::1730243623
-::res://scenes/::1730243846
-level_1.tscn::PackedScene::6163402375119128092::1730243841::0::1::::<><>::uid://b6xvofyoblwm4::::res://scenes/main.tscn
-main.tscn::PackedScene::4611055883108191285::1730243846::0::1::::<><>::uid://dqq60jx2hqtl6::::res://assets/Space Background.png<>res://scripts/main.gd<>res://scripts/rocket.gd<>uid://bbdhj4wsl6stn::::res://assets/rocket/GRL_spaceship_1-0.png<>uid://dxh48weccp38c::::res://assets/rocket/GRL_RCS_thruster_block_1-0.png<>uid://bqsjlc3c2t7d0::::res://assets/particules/smoke_04.png<>uid://baowh1enmjr73::::res://assets/construction kit/ckitBevel.png<>uid://c3cnhmara7n4::::res://assets/particules/star_01.png<>res://scripts/restart.gd
-main_menu.tscn::PackedScene::4136628515673219563::1730243841::0::1::::<><>::res://scripts/main_menu.gd<>uid://dqq60jx2hqtl6::::res://assets/Space Background.png
-random_level.tscn::PackedScene::7813419933185445028::1730243841::0::1::::<><>::uid://b6xvofyoblwm4::::res://scenes/main.tscn
-server.tscn::PackedScene::599142165254605944::1730243841::0::1::::<><>::res://scripts/server.gd
-::res://scripts/::1730243788
-main.gd::GDScript::-1::1730243684::0::1::::<>Node2D<>::
+::res://scenes/::1730244911
+level_1.tscn::PackedScene::6163402375119128092::1730244790::0::1::::<><>::uid://b6xvofyoblwm4::::res://scenes/main.tscn
+main.tscn::PackedScene::4611055883108191285::1730244911::0::1::::<><>::uid://dqq60jx2hqtl6::::res://assets/Space Background.png<>res://scripts/main.gd<>res://scripts/rocket.gd<>uid://bbdhj4wsl6stn::::res://assets/rocket/GRL_spaceship_1-0.png<>uid://dxh48weccp38c::::res://assets/rocket/GRL_RCS_thruster_block_1-0.png<>uid://bqsjlc3c2t7d0::::res://assets/particules/smoke_04.png<>uid://baowh1enmjr73::::res://assets/construction kit/ckitBevel.png<>uid://c3cnhmara7n4::::res://assets/particules/star_01.png<>res://scripts/restart.gd
+main_menu.tscn::PackedScene::4136628515673219563::1730244790::0::1::::<><>::res://scripts/main_menu.gd<>uid://dqq60jx2hqtl6::::res://assets/Space Background.png
+random_level.tscn::PackedScene::7813419933185445028::1730244790::0::1::::<><>::uid://b6xvofyoblwm4::::res://scenes/main.tscn
+server.tscn::PackedScene::599142165254605944::1730244790::0::1::::<><>::res://scripts/server.gd
+::res://scripts/::1730243882
+main.gd::GDScript::-1::1730243871::0::1::::<>Node2D<>::
 main_menu.gd::GDScript::-1::1730240950::0::1::::<>Control<>::
 restart.gd::GDScript::-1::1730242957::0::1::::<>Node<>::
-rocket.gd::GDScript::-1::1730243788::0::1::::<>RigidBody2D<>::
+rocket.gd::GDScript::-1::1730243882::0::1::::<>RigidBody2D<>::
 server.gd::GDScript::-1::1730067360::0::1::::NWebSocketServer<>Node<>::
 settings.gd::GDScript::-1::1730229839::0::1::::<>Node2D<>::

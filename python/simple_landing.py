@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+import time
 
 class GRL:
     def __init__(self, uri):
@@ -51,7 +52,7 @@ def process(state: dict):
     """
 
     inputs = {
-        "main_thrust": 0,
+        "main_thrust": 0.4,
         "rcs_left_thrust": 0,
         "rcs_right_thrust": 0
     }
