@@ -44,4 +44,10 @@ class GRL:
 
     @abstractmethod
     def process(self, state: dict):
+        """
+        Processes the current state of the rocket.
+
+        :param state: A dictionary representing the current state of the rocket.
+        :return: A new dictionary that specifies the input for the rocket.
+        """
         pass
