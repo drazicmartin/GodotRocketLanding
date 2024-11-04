@@ -17,7 +17,7 @@ func _ready():
 	if Settings.control_mode == "script":
 		# Initially, pause the game
 		get_tree().paused = true
-	
+
 func _physics_process(delta: float) -> void:
 	if Settings.control_mode == "script":
 		if run_once:
@@ -38,6 +38,15 @@ func allow_one_physics_step() -> void:
 	run_once = false
 	get_tree().paused = false
 
+func handle_action(data):
+	var action = data['action']
+	if action == "restart":
+		$Option.restart()
+	elif action == "quit":
+		$Option.quit()
+	elif action == "change_level":
+		$Option.change_level(data['level_name'])
+
 func _on_message_received(peer_id: int, message: String):
 	self.peer_id = peer_id
 	allow_one_physics_step()
@@ -45,8 +54,11 @@ func _on_message_received(peer_id: int, message: String):
 	var json = JSON.new()
 	var error = json.parse(message)
 	if error == OK:
-		var data = json.data
-		rocket.set_inputs(data)
+		var data: Dictionary = json.data
+		if data.has("action"):
+			handle_action(data)
+		else:
+			rocket.set_inputs(data)
 	else:
 		print("JSON Parse Error: ", json.get_error_message(), " in ", message, " at line ", json.get_error_line())
 

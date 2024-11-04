@@ -33,6 +33,7 @@ var right_thurster_particules = $ParticulesRT
 @onready
 var obj_center_of_mass = $"center of mass"
 
+var rocket_integrity: float = 1
 var allow_one_step: bool
 var is_thrusting = false
 var is_rcs_left_on = false
@@ -99,30 +100,33 @@ func _physics_process(delta):
 		self.inputs['rcs_right_thrust'] = float(Input.is_action_pressed("ui_left"))
 	
 	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * delta
-	apply_force(
-		self.main_thurster_force_vector, 
-		Vector2()
-	)
 	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * delta
-	apply_force(
-		self.rcs_left_force_vector,
-		 $rcs_left.transform.origin
-	)
 	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * delta
-	apply_force(
-		self.rcs_right_force_vector,
-		$rcs_right.transform.origin
-	)
 	
-	main_thurster_particules.amount_ratio = self.inputs['main_thrust']
-	left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
-	right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
+	if rocket_integrity >= 0.05:
+		apply_force(
+			self.main_thurster_force_vector, 
+			Vector2()
+		)
+		apply_force(
+			self.rcs_left_force_vector,
+			 $rcs_left.transform.origin
+		)
+		apply_force(
+			self.rcs_right_force_vector,
+			$rcs_right.transform.origin
+		)
+		
+		main_thurster_particules.amount_ratio = self.inputs['main_thrust']
+		left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
+		right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
 	
 	if was_on_ground == false and is_on_ground():
 		was_on_ground = true
 		print("Hit velocity : " + str(get_linear_velocity().length()))
 		print("physics step : " + str(physics_count))
 		if get_linear_velocity().length() > VELOCITY_DESTRUCTION:
+			
 			emit_signal("simulation_finished", {"game_state": "crash"})
 		else:
 			emit_signal("simulation_finished", {"game_state": "victory"})
@@ -161,7 +165,7 @@ func set_inputs(inputs: Dictionary):
 	for key in inputs:
 		self.inputs[key] = inputs[key]
 
-# Function to check if the player is on the ground
+# Function to check if the rocket is on the ground
 func is_on_ground() -> bool:
 	var raycast_left = $RayCast2DLeft
 	var raycast_right = $RayCast2DRight

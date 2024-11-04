@@ -40,8 +40,7 @@ func _process(delta: float) -> void:
 	pass
 
 func _on_exit_button_pressed() -> void:
-	WebSocketServer.stop()
-	get_tree().quit()
+	$Option.quit()
 
 func _on_send_message_pressed() -> void:
 	if global_peer_id:

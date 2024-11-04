@@ -1,5 +1,9 @@
 res://scenes/main.tscn
+res://scripts/main.gd
+res://scripts/restart.gd
+res://scripts/settings.gd
+res://scenes/option.gd
 res://scenes/main_menu.tscn
 res://scenes/server.tscn
+res://scripts/main_menu.gd
 res://scenes/level_1.tscn
-res://scenes/random_level.tscn

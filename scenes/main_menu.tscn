@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://by62wxm63gyq2"]
+[gd_scene load_steps=4 format=3 uid="uid://by62wxm63gyq2"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_dmf7c"]
 [ext_resource type="Texture2D" uid="uid://dqq60jx2hqtl6" path="res://assets/Space Background.png" id="2_w1nfm"]
+[ext_resource type="Script" path="res://scenes/option.gd" id="3_5fms5"]
 
 [node name="Main Menu" type="Control"]
 layout_mode = 3
@@ -118,6 +119,9 @@ theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center] Script [/center]"
 fit_content = true
+
+[node name="Option" type="Node" parent="."]
+script = ExtResource("3_5fms5")
 
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Random levelButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Level 1" to="." method="_on_start_level_1_pressed"]
