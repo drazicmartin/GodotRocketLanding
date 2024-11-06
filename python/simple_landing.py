@@ -2,7 +2,7 @@ import asyncio
 from utils import GRL
 
 class SimpleLanding(GRL):
-    def process(state: dict):
+    def process(self, state: dict):
         """
         Processes the current state of the rocket.
 
