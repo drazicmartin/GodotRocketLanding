@@ -51,3 +51,19 @@ class GRL:
         :return: A new dictionary that specifies the input for the rocket.
         """
         pass
+
+    def get_change_level_input(self, level_name):
+        return  {
+            'action': 'change_level',
+            'level_name': level_name,
+        }
+    
+    def get_quit_game_input(self):
+        return {
+            'action':  'quit'
+        }
+    
+    def get_restart_level_input(self):
+        return {
+            'action':  'restart_level'
+        }

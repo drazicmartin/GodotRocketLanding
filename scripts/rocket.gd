@@ -39,7 +39,7 @@ var is_thrusting = false
 var is_rcs_left_on = false
 var is_rcs_right_on = false
 var was_on_ground = false
-var physics_count: int = 0
+var num_frame_computed: int = 0
 var inputs : Dictionary = DEFAULT_INPUTS.duplicate()
 var delta: float = 0.0
 
@@ -124,9 +124,8 @@ func _physics_process(delta):
 	if was_on_ground == false and is_on_ground():
 		was_on_ground = true
 		print("Hit velocity : " + str(get_linear_velocity().length()))
-		print("physics step : " + str(physics_count))
+		print("physics step : " + str(num_frame_computed))
 		if get_linear_velocity().length() > VELOCITY_DESTRUCTION:
-			
 			emit_signal("simulation_finished", {"game_state": "crash"})
 		else:
 			emit_signal("simulation_finished", {"game_state": "victory"})
@@ -134,7 +133,7 @@ func _physics_process(delta):
 		pass
 	else:
 		was_on_ground = false
-	physics_count+=1
+	self.num_frame_computed += 1
 	
 	if self.debug:
 		queue_redraw()
@@ -143,7 +142,8 @@ func get_state():
 	return {
 		'position': self.position,
 		'velocity': self.linear_velocity,
-		'rotation': self.rotation
+		'rotation': self.rotation,
+		'num_frame_computed': self.num_frame_computed,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:

@@ -1,3 +1,3 @@
 extends Node2D
 
-var control_mode = "manual"
+var control_mode = "script"

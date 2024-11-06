@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_dmf7c"]
 [ext_resource type="Texture2D" uid="uid://dqq60jx2hqtl6" path="res://assets/Space Background.png" id="2_w1nfm"]
-[ext_resource type="Script" path="res://scenes/option.gd" id="3_5fms5"]
+[ext_resource type="Script" path="res://scripts/actions.gd" id="3_5fms5"]
 
 [node name="Main Menu" type="Control"]
 layout_mode = 3
@@ -108,6 +108,7 @@ fit_content = true
 
 [node name="CheckButton" type="CheckButton" parent="VBoxContainer/Select Mode"]
 layout_mode = 2
+button_pressed = true
 alignment = 1
 
 [node name="Script" type="RichTextLabel" parent="VBoxContainer/Select Mode"]

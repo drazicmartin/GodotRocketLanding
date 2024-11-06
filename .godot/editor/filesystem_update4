@@ -1,3 +1,12 @@
 res://scenes/main_menu.tscn
 res://scenes/random_level.tscn
 res://scenes/main.tscn
+res://scripts/main.gd
+res://scenes/option.gd
+res://scripts/rocket.gd
+res://scenes/server.tscn
+res://scenes/level_1.tscn
+res://scripts/settings.gd
+res://scripts/main_menu.gd
+res://scenes/actions.gd
+res://scripts/actions.gd

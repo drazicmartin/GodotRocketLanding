@@ -6,6 +6,3 @@
 
 [node name="Rocket" parent="." index="2"]
 randomize_init = true
-
-[node name="Option" parent="." index="3"]
-scene_name = "random_level"
