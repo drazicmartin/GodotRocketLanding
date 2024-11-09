@@ -24,6 +24,8 @@ const DEFAULT_INPUTS = {
 	"rcs_left_thrust": 0.0,
 	"rcs_right_thrust": 0.0
 }
+const NO_DAMAGE_VELOCITY_THRESHOLD = 100
+const CRASH_VELOCITY_TRHESHOLD = 500
 @onready
 var main_thurster_particules = $ParticulesMT
 @onready
@@ -32,6 +34,12 @@ var left_thurster_particules = $ParticulesLT
 var right_thurster_particules = $ParticulesRT
 @onready
 var obj_center_of_mass = $"center of mass"
+@onready
+var animated_sprite = $AnimatedSprite2D
+@onready var rcs_left_sprite = $rcs_left
+@onready var rcs_right_sprite = $rcs_right
+@onready
+var integrity_text = $integrity_text
 
 var rocket_integrity: float = 1
 var allow_one_step: bool
@@ -42,6 +50,7 @@ var was_on_ground = false
 var num_frame_computed: int = 0
 var inputs : Dictionary = DEFAULT_INPUTS.duplicate()
 var delta: float = 0.0
+var last_know_velocity: float = 0
 
 var main_thurster_force_vector = Vector2()
 var rcs_left_force_vector = Vector2()
@@ -50,6 +59,7 @@ var rcs_right_force_vector = Vector2()
 signal simulation_finished(state: Dictionary)
 
 func _ready() -> void:
+	
 	Engine.time_scale = 1
 	if randomize_init:
 		# Randomize initial values
@@ -123,12 +133,7 @@ func _physics_process(delta):
 	
 	if was_on_ground == false and is_on_ground():
 		was_on_ground = true
-		print("Hit velocity : " + str(get_linear_velocity().length()))
-		print("physics step : " + str(num_frame_computed))
-		if get_linear_velocity().length() > VELOCITY_DESTRUCTION:
-			emit_signal("simulation_finished", {"game_state": "crash"})
-		else:
-			emit_signal("simulation_finished", {"game_state": "victory"})
+		emit_signal("simulation_finished", {"game_state": "victory"})
 	elif was_on_ground and is_on_ground():
 		pass
 	else:
@@ -137,6 +142,7 @@ func _physics_process(delta):
 	
 	if self.debug:
 		queue_redraw()
+	self.last_know_velocity = self.linear_velocity.length()
 
 func get_state():
 	return {
@@ -144,6 +150,7 @@ func get_state():
 		'velocity': self.linear_velocity,
 		'rotation': self.rotation,
 		'num_frame_computed': self.num_frame_computed,
+		'rocket_integrity': self.rocket_integrity,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:
@@ -165,8 +172,37 @@ func set_inputs(inputs: Dictionary):
 	for key in inputs:
 		self.inputs[key] = inputs[key]
 
+func crash():
+	emit_signal("simulation_finished", {"game_state": "crash"})
+	print("Rocket Crashed")
+	self.sleeping = true
+	var k = 3  # Scale factor
+	animated_sprite.play("explosion")
+	animated_sprite.scale = Vector2(k, k)
+	rcs_left_sprite.visible = false
+	rcs_right_sprite.visible = false
+	integrity_text.visible = false
+	main_thurster_particules.visible = false
+	left_thurster_particules.visible = false
+	right_thurster_particules.visible = false
+
 # Function to check if the rocket is on the ground
 func is_on_ground() -> bool:
 	var raycast_left = $RayCast2DLeft
 	var raycast_right = $RayCast2DRight
 	return raycast_left.is_colliding() and raycast_right.is_colliding()
+
+func _on_body_entered(body: Node) -> void:
+	var damage: float = 0.0
+	var hit_velocity = self.last_know_velocity
+	if hit_velocity < NO_DAMAGE_VELOCITY_THRESHOLD:
+		damage = 0.0
+	elif hit_velocity > CRASH_VELOCITY_TRHESHOLD:
+		damage = self.rocket_integrity
+	else:
+		damage = (hit_velocity - NO_DAMAGE_VELOCITY_THRESHOLD) / CRASH_VELOCITY_TRHESHOLD
+	self.rocket_integrity -= damage
+	integrity_text.text = "[center]%s[/center]" % int(self.rocket_integrity*100)
+	if self.rocket_integrity <= 0.0:
+		crash()
+	
