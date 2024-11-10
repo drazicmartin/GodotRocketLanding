@@ -59,7 +59,6 @@ var rcs_right_force_vector = Vector2()
 signal simulation_finished(state: Dictionary)
 
 func _ready() -> void:
-	
 	Engine.time_scale = 1
 	if randomize_init:
 		# Randomize initial values
