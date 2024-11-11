@@ -35,6 +35,10 @@ func restart_level():
 	change_level(scene_name)
 
 func change_level(scene_name):
+	var current_scene_path = get_tree().current_scene.get_scene_file_path()
+	var current_scene_name = current_scene_path.get_file().get_basename()
+	if current_scene_name == scene_name:
+		return
 	get_tree().paused = false
 	self._on_game_state_change("new_level")
 	get_tree().change_scene_to_file("res://scenes/"+scene_name+".tscn")
