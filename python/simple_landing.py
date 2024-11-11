@@ -1,5 +1,6 @@
 import asyncio
 from utils import GRL
+import ast
 
 class SimpleLanding(GRL):
     def process(self, state: dict):
@@ -9,6 +10,8 @@ class SimpleLanding(GRL):
         :param state: A dictionary representing the current state of the rocket.
         :return: A new dictionary that specifies the input for the rocket.
         """
+        position = ast.literal_eval(state['position'])
+        velocity = ast.literal_eval(state['velocity'])
 
         inputs = {
             "main_thrust": 0.8,
