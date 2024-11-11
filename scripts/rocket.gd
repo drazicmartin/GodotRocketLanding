@@ -4,14 +4,10 @@ extends RigidBody2D
 var debug: bool = false
 @export
 var randomize_init : bool = false
-@export 
-var initial_direction : Vector2 = Vector2(0,0)
-@export 
-var initial_velocity : float = 0
-@export 
-var initial_rotation : float = 0
 @export
-var initial_position : Vector2 = Vector2(0,0)
+var initial_direction : Vector2 = Vector2(0,0)
+@export
+var initial_velocity : float = 0
 
 # Constants
 const FORCE_COLOR = Color(1, 0, 0)  # Red color for force visualization
@@ -64,13 +60,11 @@ func _ready() -> void:
 		# Randomize initial values
 		initial_direction = Vector2(randf_range(-0.5, 0.5), randf_range(0, 1)).normalized() # Random velocity between -100 and 100 for both x and y
 		initial_velocity = randf_range(100,1000)
-		initial_position = Vector2(randf_range(-100, 100), randf_range(-400, 0))  # Random position in the defined range
-		initial_rotation = randf_range(deg_to_rad(-10), deg_to_rad(10))  # Random rotation between 0 and 360 degrees (in radians)
+		self.position = Vector2(randf_range(-100, 100), randf_range(-400, 0))  # Random position in the defined range
+		self.rotation = randf_range(deg_to_rad(-10), deg_to_rad(10))  # Random rotation between 0 and 360 degrees (in radians)
 	
 	# Set inital state
 	self.linear_velocity = initial_velocity * initial_direction
-	self.position = initial_position
-	self.rotation = initial_rotation
 	
 	# set Center of Mass
 	self.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
@@ -144,7 +138,7 @@ func _physics_process(delta):
 	self.last_know_velocity = self.linear_velocity.length()
 
 func get_state():
-	return {
+	return { 
 		'position': self.position,
 		'velocity': self.linear_velocity,
 		'rotation': self.rotation,
