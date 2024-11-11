@@ -54,6 +54,14 @@ text = "Start Random Level"
 layout_mode = 2
 text = "Level 1"
 
+[node name="Start Level 2" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Level 2"
+
+[node name="Start Level 3" type="Button" parent="HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Level 3"
+
 [node name="Exit Button" type="Button" parent="HBoxContainer/Game VBoxContainer"]
 layout_mode = 2
 text = "Exit"
@@ -126,6 +134,8 @@ script = ExtResource("3_5fms5")
 
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Random levelButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Level 1" to="." method="_on_start_level_1_pressed"]
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Level 2" to="." method="_on_start_level_2_pressed"]
+[connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Level 3" to="." method="_on_start_level_3_pressed"]
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Exit Button" to="." method="_on_exit_button_pressed"]
 [connection signal="button_down" from="VBoxContainer/Select Mode/CheckButton" to="." method="_on_check_button_button_down"]
 [connection signal="button_up" from="VBoxContainer/Select Mode/CheckButton" to="." method="_on_check_button_button_up"]

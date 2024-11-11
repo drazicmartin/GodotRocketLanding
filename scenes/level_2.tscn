@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcxvx4nvidsvw"]
+
+[ext_resource type="PackedScene" uid="uid://b6xvofyoblwm4" path="res://scenes/main.tscn" id="1_ugxor"]
+
+[node name="MainScene" instance=ExtResource("1_ugxor")]
+
+[node name="Rocket" parent="." index="2"]
+position = Vector2(0, -1080)
+debug = false
+randomize_init = false
+initial_direction = Vector2(0, 0)
+initial_velocity = 0.0
