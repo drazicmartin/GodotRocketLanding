@@ -16,6 +16,8 @@ func _ready():
 	WebSocketServer.connect("client_connected", Callable(self, "_on_client_connected"))
 	WebSocketServer.connect("client_disconnected", Callable(self, "_on_client_disconnected"))
 	
+	Action.connect("request_state", Callable(self, "_on_request_state"))
+	
 	if Settings.control_mode == "script":
 		# Initially, pause the game
 		get_tree().paused = true
@@ -24,15 +26,18 @@ func _physics_process(delta: float) -> void:
 	if Settings.control_mode == "script":
 		if run_once:
 			get_tree().paused = true
-			send_state()
+			send_state(self.peer_id)
 		run_once = true
 
-func send_state():
+func _on_request_state(peer_id):
+	send_state(peer_id)
+
+func send_state(peer_id):
 	# Responding with a JSON message
 	var response = Rocket.get_state()
 	var json_response = JSON.stringify(response)
-	if self.peer_id != null:
-		WebSocketServer.send(self.peer_id, json_response)
+	if peer_id != null:
+		WebSocketServer.send(peer_id, json_response)
 
 func allow_one_physics_step() -> void:
 	# This method can be called externally or in response to some event
@@ -58,7 +63,7 @@ func _on_message_received(peer_id: int, message: String):
 func _on_client_connected(peer_id: int):
 	print("Client connected")
 	self.peer_id = peer_id
-	send_state()
 
 func _on_client_disconnected(peer_id: int):
+	print("Client Disconnected")
 	self.peer_id = null
