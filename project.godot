@@ -20,6 +20,12 @@ config/icon="res://icon.svg"
 WebSocketServer="*res://scenes/server.tscn"
 Settings="*res://scripts/settings.gd"
 
+[importer_defaults]
+
+animation_library={
+"animation/fps": 60.0
+}
+
 [input]
 
 restart={
