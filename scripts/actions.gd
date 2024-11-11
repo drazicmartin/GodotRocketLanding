@@ -32,12 +32,12 @@ func restart_level():
 	var scene_path = get_tree().current_scene.get_scene_file_path()
 	# Extract only the scene name (without the file path)
 	var scene_name = scene_path.get_file().get_basename()
-	change_level(scene_name)
+	change_level(scene_name, true)
 
-func change_level(scene_name):
+func change_level(scene_name, force: bool = false):
 	var current_scene_path = get_tree().current_scene.get_scene_file_path()
 	var current_scene_name = current_scene_path.get_file().get_basename()
-	if current_scene_name == scene_name:
+	if current_scene_name == scene_name and not force:
 		return
 	get_tree().paused = false
 	self._on_game_state_change("new_level")
