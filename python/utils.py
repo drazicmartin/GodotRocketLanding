@@ -1,17 +1,33 @@
 import websockets
 import json
 from abc import ABC, abstractmethod
+import subprocess
+import time
 
 class GRL:
-    def __init__(self, uri):
-        self.uri = uri
+    def __init__(
+            self, 
+            port: int = 65000, 
+            exe_path: str = "GRL.exe"
+        ):
+        self.port = port
+        self.uri = f"ws://127.0.0.1:{int(port)}"
         self.websocket = None  # Initialize websocket as None
+        self.exe_path = exe_path
 
     async def connect(self):
-        # Perform the async connection setup in a separate async method
-        print(f"Connection to {self.uri}")
-        self.websocket = await websockets.connect(self.uri)
-        print("Connection succeed")
+        if self.websocket and self.websocket.open:
+            print("Already connected.")
+        else:
+            print("Not connected. Attempting to connect...")
+            self.websocket = await websockets.connect(self.uri, timeout=60)
+
+    async def get_state(self):
+        await self.send_data({
+            'action': 'get_state'
+        })
+        state = await self.receive_data()
+        return state
 
     async def send_data(self, data):
         if self.websocket is not None:
@@ -25,22 +41,28 @@ class GRL:
         response_data = json.loads(response)
         return response_data
 
-    async def crash(self):
-        if self.websocket is not None:
-            await self.websocket.close()
+    async def quit_game(self):
+        await self.send_data(self.get_quit_game_input())
 
-    async def ignition(self):
+    async def stop(self):
+        await self.quit_game()
+
+    async def ignition(self, level_name:str = "level_1"):
         await self.connect()
+        await self.change_level(level_name)
+        state = await self.get_state()
         while True:
-            state = await self.receive_data()
-
             if "game_state" in state:
                 print(state['game_state'])
                 break
 
             inputs = self.process(state)
             await self.send_data(inputs)
-        await self.crash()
+
+            state = await self.receive_data()
+
+    def start_game(self):
+        subprocess.Popen([self.exe_path, "-p", str(self.port)], creationflags=subprocess.DETACHED_PROCESS)
 
     @abstractmethod
     def process(self, state: dict):
@@ -51,6 +73,11 @@ class GRL:
         :return: A new dictionary that specifies the input for the rocket.
         """
         pass
+
+    async def change_level(self, level_name):
+        input = self.get_change_level_input(level_name)
+        await self.send_data(input)
+        await self.receive_data()
 
     def get_change_level_input(self, level_name):
         return  {

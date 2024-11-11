@@ -11,20 +11,25 @@ class SimpleLanding(GRL):
         """
 
         inputs = {
-            "main_thrust": 0.4,
+            "main_thrust": 0.8,
             "rcs_left_thrust": 0,
-            "rcs_right_thrust": 0
+            "rcs_right_thrust": 1
         }
 
         print(state)
 
         return inputs
 
+async def main(rocket: GRL):
+    rocket.start_game()
+    await rocket.ignition(level_name="level_1")
+    await rocket.stop()
+    print("Done!")
+
 if __name__ == "__main__":
     rocket = SimpleLanding(
-        uri="ws://127.0.0.1:65000"
-    ) 
-    try:
-        asyncio.run(rocket.ignition())
-    finally:
-        asyncio.run(rocket.crash())
+        port=65000
+    )
+    asyncio.run(
+        main(rocket)
+    )
