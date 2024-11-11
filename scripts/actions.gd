@@ -2,6 +2,8 @@ extends Node
 
 var peer_id = null
 
+signal request_state(peer_id:int)
+
 func _ready():
 	# Connect signals to this scene using Callable
 	WebSocketServer.connect("message_received", Callable(self, "_on_message_received"))
@@ -12,6 +14,8 @@ func handle_action(data):
 	var action = data['action']
 	if action == "restart_level":
 		self.restart_level()
+	elif action == "get_state":
+		request_state.emit(self.peer_id)
 	elif action == "quit":
 		self.quit()
 	elif action == "change_level":
