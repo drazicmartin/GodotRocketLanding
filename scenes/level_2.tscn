@@ -6,7 +6,3 @@
 
 [node name="Rocket" parent="." index="2"]
 position = Vector2(0, -1080)
-debug = false
-randomize_init = false
-initial_direction = Vector2(0, 0)
-initial_velocity = 0.0

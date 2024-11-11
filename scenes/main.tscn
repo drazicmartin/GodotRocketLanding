@@ -2623,7 +2623,7 @@ texture = ExtResource("5_idxnp")
 lifetime = 0.05
 fixed_fps = 0
 draw_order = 0
-trail_lifetime = 0.01
+trail_lifetime = 0.1
 
 [node name="ParticulesRT" type="GPUParticles2D" parent="Rocket"]
 material = SubResource("CanvasItemMaterial_fadkr")
@@ -2635,7 +2635,7 @@ texture = ExtResource("5_idxnp")
 lifetime = 0.05
 fixed_fps = 0
 draw_order = 0
-trail_lifetime = 0.01
+trail_lifetime = 0.1
 
 [node name="ParticulesMT" type="GPUParticles2D" parent="Rocket"]
 material = SubResource("CanvasItemMaterial_fadkr")
