@@ -32,7 +32,7 @@ func _ready():
 	WebSocketServer.listen(int(input_port.text)) # Replace with function body.
 
 func _on_exit_button_pressed() -> void:
-	$Option.quit()
+	$Actions.quit()
 
 func _on_send_message_pressed() -> void:
 	if global_peer_id:

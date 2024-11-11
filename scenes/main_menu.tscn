@@ -121,7 +121,7 @@ bbcode_enabled = true
 text = "[center] Script [/center]"
 fit_content = true
 
-[node name="Option" type="Node" parent="."]
+[node name="Actions" type="Node" parent="."]
 script = ExtResource("3_5fms5")
 
 [connection signal="pressed" from="HBoxContainer/Game VBoxContainer/Start Random levelButton" to="." method="_on_start_button_pressed"]
