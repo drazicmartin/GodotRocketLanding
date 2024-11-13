@@ -15,12 +15,18 @@ class GRL:
         self.websocket = None  # Initialize websocket as None
         self.exe_path = exe_path
 
-    async def connect(self):
+    async def connect(self, max_retry=5):
         if self.websocket and self.websocket.open:
             print("Already connected.")
         else:
             print("Not connected. Attempting to connect...")
-            self.websocket = await websockets.connect(self.uri, timeout=60)
+            try:
+                self.websocket = await websockets.connect(self.uri, timeout=60)
+            except ConnectionRefusedError as e:
+                if max_retry > 0:
+                    self.connect(max_retry-1)
+                else:
+                    raise e
 
     async def get_state(self):
         await self.send_data({
