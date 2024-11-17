@@ -8,6 +8,8 @@ extends Node2D
 @export var ray_spacing: int = 2
 const RAY_EXPORT: int = 350
 
+@export var debug: bool = false
+
 @export var rocket: RigidBody2D
 
 func _physics_process(_delta: float) -> void:
@@ -33,7 +35,8 @@ func _physics_process(_delta: float) -> void:
 			rocket.apply_force(wind_force * wind_direction, rocket.to_local(result.position))
 			
 	
-	queue_redraw()
+	if debug:
+		queue_redraw()
 
 func cast_ray(start: Vector2, end: Vector2) -> Dictionary:
 	# Get the Physics2DDirectSpaceState
@@ -52,6 +55,8 @@ func cast_ray(start: Vector2, end: Vector2) -> Dictionary:
 
 
 func _draw():
+	if not debug:
+		return
 	if not rocket:
 		return
 	
