@@ -20,6 +20,11 @@ config/icon="res://icon.svg"
 WebSocketServer="*res://scenes/server.tscn"
 Settings="*res://scripts/settings.gd"
 
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=640
+
 [importer_defaults]
 
 animation_library={

@@ -2,8 +2,7 @@ extends Control
 
 var global_peer_id = null
 
-@onready
-var input_port = $"HBoxContainer/Server VBoxContainer/InputPortNumber"
+@onready var input_port_number: TextEdit = $"VBoxContainer2/HBoxContainer/Server VBoxContainer/InputPortNumber"
 
 # In the script of the new scene (e.g., main_menu.gd)
 func _ready():
@@ -21,15 +20,15 @@ func _ready():
 		var value_index = args.find("-p") + 1
 		if value_index < args.size():
 			var value = args[value_index]
-			input_port.text = value
+			input_port_number.text = value
 	if "--port" in args:
 		var value_index = args.find("--port") + 1
 		if value_index < args.size():
 			var value = args[value_index]
-			input_port.text = value
+			input_port_number.text = value
 	
 	WebSocketServer.stop()
-	WebSocketServer.listen(int(input_port.text)) # Replace with function body.
+	WebSocketServer.listen(int(input_port_number.text)) # Replace with function body.
 
 func _on_exit_button_pressed() -> void:
 	$Actions.quit()
@@ -45,7 +44,7 @@ func _on_check_button_toggled(toggled_on: bool) -> void:
 
 func _on_check_button_button_up() -> void:
 	WebSocketServer.stop()
-	WebSocketServer.listen(int(input_port.text)) # Replace with function body.
+	WebSocketServer.listen(int(input_port_number.text)) # Replace with function body.
 
 func _on_check_button_button_down() -> void:
 	WebSocketServer.stop()
