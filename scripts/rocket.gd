@@ -96,6 +96,7 @@ func _draw() -> void:
 func _physics_process(delta):
 	delta = delta / Engine.time_scale
 	self.delta = delta
+	
 	if Settings.control_mode == "manual":
 		# Check for player input to control the thruster
 		self.inputs['main_thrust'] = float(Input.is_action_pressed("ui_up"))

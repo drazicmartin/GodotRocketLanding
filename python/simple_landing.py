@@ -13,13 +13,25 @@ class SimpleLanding(GRL):
         position = ast.literal_eval(state['position'])
         velocity = ast.literal_eval(state['velocity'])
 
-        inputs = {
-            "main_thrust": 0.8,
-            "rcs_left_thrust": 0,
-            "rcs_right_thrust": 1
-        }
+        rcs_left_thrust = 0
+        rcs_right_thrust = 0
 
-        print(state)
+        if state['rotation'] > 0:
+            rcs_right_thrust = 0.5
+        else:
+            rcs_left_thrust = 0.5
+
+        t = 0.4
+        if position[1] > 0:
+            t = 1
+        if position[1] > 190:
+            t =0
+
+        inputs = {
+            "main_thrust": t,
+            "rcs_left_thrust": rcs_left_thrust,
+            "rcs_right_thrust": rcs_right_thrust,
+        }
 
         return inputs
 

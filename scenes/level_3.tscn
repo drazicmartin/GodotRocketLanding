@@ -4,6 +4,6 @@
 
 [node name="MainScene" instance=ExtResource("1_hcyo8")]
 
-[node name="Rocket" parent="." index="2"]
+[node name="Rocket" parent="." index="3"]
 position = Vector2(0, -615)
 rotation = 0.513259

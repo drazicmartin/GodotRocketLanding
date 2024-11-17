@@ -61,3 +61,6 @@ func _on_start_level_2_pressed() -> void:
 
 func _on_start_level_3_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/level_3.tscn")
+
+func _on_start_level_4_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/level_4.tscn")
