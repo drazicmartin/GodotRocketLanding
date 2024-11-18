@@ -22,10 +22,10 @@ class SimpleLanding(GRL):
             rcs_left_thrust = 0.5
 
         t = 0.4
-        if position[1] > 0:
-            t = 1
-        if position[1] > 190:
-            t =0
+        if position[1] > -200:
+            t = 0.8
+        if position[1] > -10:
+            t = 0
 
         inputs = {
             "main_thrust": t,
