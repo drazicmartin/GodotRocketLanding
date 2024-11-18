@@ -127,7 +127,7 @@ func _physics_process(delta):
 	
 	if was_on_ground == false and is_on_ground():
 		was_on_ground = true
-		emit_signal("simulation_finished", {"game_state": "victory"})
+		emit_signal("simulation_finished", {"game_state": "victory", "score": self.rocket_integrity})
 	elif was_on_ground and is_on_ground():
 		pass
 	else:
