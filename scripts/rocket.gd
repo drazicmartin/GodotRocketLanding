@@ -8,6 +8,7 @@ var randomize_init : bool = false
 var initial_direction : Vector2 = Vector2(0,0)
 @export
 var initial_velocity : float = 0
+@onready var wind_system: Node2D = %WindSystem
 
 # Constants
 const FORCE_COLOR = Color(1, 0, 0)  # Red color for force visualization
@@ -145,6 +146,7 @@ func get_state():
 		'rotation': self.rotation,
 		'num_frame_computed': self.num_frame_computed,
 		'rocket_integrity': self.rocket_integrity,
+		'wind': self.wind_system.get_state(),
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:

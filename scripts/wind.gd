@@ -53,6 +53,8 @@ func cast_ray(start: Vector2, end: Vector2) -> Dictionary:
 
 	return result
 
+func get_state():
+	return wind_force * wind_direction
 
 func _draw():
 	if not debug:
