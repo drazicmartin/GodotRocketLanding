@@ -36,7 +36,7 @@ class SimpleLanding(GRL):
         return inputs
 
 async def main(rocket: GRL):
-    rocket.start_game()
+    rocket.start_game(show_window=True)
     await rocket.ignition(level_name="level_1")
     await rocket.stop()
     print("Done!")

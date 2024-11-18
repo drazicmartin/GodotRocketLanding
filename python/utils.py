@@ -67,8 +67,11 @@ class GRL:
 
             state = await self.receive_data()
 
-    def start_game(self):
-        subprocess.Popen([self.exe_path, "-p", str(self.port)], creationflags=subprocess.DETACHED_PROCESS)
+    def start_game(self, show_window=False):
+        cmd = [self.exe_path, "-p", str(self.port)]
+        if not show_window:
+            cmd.append("--headless")
+        subprocess.Popen(cmd, creationflags=subprocess.DETACHED_PROCESS)
 
     @abstractmethod
     def process(self, state: dict):
