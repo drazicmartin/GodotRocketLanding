@@ -24,7 +24,7 @@ class GRL:
                 self.websocket = await websockets.connect(self.uri, timeout=60)
             except ConnectionRefusedError as e:
                 if max_retry > 0:
-                    self.connect(max_retry-1)
+                    await self.connect(max_retry-1)
                 else:
                     raise e
 
