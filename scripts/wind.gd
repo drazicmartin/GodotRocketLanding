@@ -3,7 +3,7 @@ extends Node2D
 # Wind parameters
 @export var wind_direction: Vector2 = Vector2.RIGHT
 @export var wind_force: float = 200.0
-@export var ray_count: int = 50
+@export var ray_count: int = 150
 @export var ray_length: float = 300.0
 @export var ray_spacing: int = 2
 const RAY_EXPORT: int = 350
