@@ -2559,6 +2559,7 @@ animations = [{
 script = ExtResource("1_i4qmn")
 
 [node name="WindSystem" type="Node2D" parent="." node_paths=PackedStringArray("rocket")]
+unique_name_in_owner = true
 script = ExtResource("12_nldry")
 wind_force = 0.0
 rocket = NodePath("../Rocket")
