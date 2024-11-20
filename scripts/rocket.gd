@@ -8,7 +8,13 @@ var randomize_init : bool = false
 var initial_direction : Vector2 = Vector2(0,0)
 @export
 var initial_velocity : float = 0
+@export 
+var fuel : float = 10
 @onready var wind_system: Node2D = %WindSystem
+@onready var fuel_tank_indicator: ColorRect = $ColorRect
+@onready var initial_fuel = fuel
+@onready var initial_tank_size = fuel_tank_indicator.size
+
 
 # Constants
 const FORCE_COLOR = Color(1, 0, 0)  # Red color for force visualization
@@ -103,10 +109,19 @@ func _physics_process(delta):
 		self.inputs['main_thrust'] = float(Input.is_action_pressed("ui_up"))
 		self.inputs['rcs_left_thrust'] = float(Input.is_action_pressed("ui_right"))
 		self.inputs['rcs_right_thrust'] = float(Input.is_action_pressed("ui_left"))
+		
+	# set Thruster at zero if no more fuel
+	self.inputs['main_thrust'] *= int(self.fuel > 0)
+	self.inputs['rcs_left_thrust'] *= int(self.fuel > 0)
+	self.inputs['rcs_right_thrust'] *= int(self.fuel > 0)
 	
 	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * delta
 	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * delta
 	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * delta
+	
+	self.fuel -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
+	self.fuel = clamp(self.fuel, 0, self.initial_fuel)
+	self.fuel_tank_indicator.size = Vector2(self.initial_tank_size.x * (self.fuel/self.initial_fuel), self.fuel_tank_indicator.size.y)
 	
 	if rocket_integrity >= 0.05:
 		apply_force(
@@ -147,6 +162,7 @@ func get_state():
 		'num_frame_computed': self.num_frame_computed,
 		'rocket_integrity': self.rocket_integrity,
 		'wind': self.wind_system.get_state(),
+		'fuel': self.fuel,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:
