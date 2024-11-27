@@ -3,6 +3,7 @@ extends Control
 var global_peer_id = null
 
 @onready var input_port_number: TextEdit = $"VBoxContainer2/HBoxContainer/Server VBoxContainer/InputPortNumber"
+@onready var check_button: CheckButton = $"VBoxContainer2/VBoxContainer/Select Mode/CheckButton"
 
 # In the script of the new scene (e.g., main_menu.gd)
 func _ready():
@@ -26,6 +27,8 @@ func _ready():
 		if value_index < args.size():
 			var value = args[value_index]
 			input_port_number.text = value
+	
+	check_button.button_pressed = Settings.control_mode == "script"
 	
 	WebSocketServer.stop()
 	WebSocketServer.listen(int(input_port_number.text)) # Replace with function body.
