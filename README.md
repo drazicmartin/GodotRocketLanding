@@ -36,6 +36,21 @@ You can control only 3 Thrusters
 }
 ```
 
+## Roadmap
+
+- [X] Rocket control and state
+- [X] Python controllable
+    - [X] Control by overriding `GRL.process` method
+    - [X] run in batch mode
+- [X] Thruster and RCS
+- [X] Propellant System
+    - [X] Propellant Tank
+    - [X] Mass updating
+- [X] Wind System
+- [ ] Planet as sphere and dynamic gravity
+- [ ] Atmospheric damage
+- [ ] Levels
+
 ## Thanks
 - [The1Muneeb](https://deep-fold.itch.io/space-background-generator), for space background generator.
 - [Simon Celeste](https://github.com/Celeste-VANDAMME), for the design of the rocket !
