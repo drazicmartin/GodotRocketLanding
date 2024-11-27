@@ -8,27 +8,34 @@ var randomize_init : bool = false
 var initial_direction : Vector2 = Vector2(0,0)
 @export
 var initial_velocity : float = 0
+
+
+var second_stage_empty_mass : int = 100_000*Settings.MASS_SCALE
+var second_stage_propellant_mass: int = 1_200_000*Settings.MASS_SCALE
+var empty_mass: int =  250_000*Settings.MASS_SCALE + second_stage_empty_mass + second_stage_propellant_mass # kg
+var propellant_mass : int = 3_400_000*Settings.MASS_SCALE # kg
+var initial_propellant_mass: int = propellant_mass
+
 @export 
-var fuel : float = 10
+var propellant : float = 10
 @onready var wind_system: Node2D = %WindSystem
-@onready var fuel_tank_indicator: ColorRect = $ColorRect
-@onready var initial_fuel = fuel
-@onready var initial_tank_size = fuel_tank_indicator.size
+@onready var propellant_tank_indicator: ColorRect = $ColorRect
+@onready var initial_propellant = propellant
+@onready var initial_tank_size = propellant_tank_indicator.size
 
 
 # Constants
 const FORCE_COLOR = Color(1, 0, 0)  # Red color for force visualization
 const LINE_SCALE = 25  # Adjust the length of the drawn force vector for better visualization
-const MAX_THRUST_POWER     = 100000000.0
-const MAX_RCS_THRUST_POWER = 10000000.0
-const VELOCITY_DESTRUCTION = 1
+const MAX_THRUST_POWER     = 69_900_000*Settings.THRUST_SCALE
+const MAX_RCS_THRUST_POWER = 69_900_0*4*Settings.THRUST_SCALE
 const DEFAULT_INPUTS = {
 	"main_thrust": 0.0,
 	"rcs_left_thrust": 0.0,
 	"rcs_right_thrust": 0.0
 }
-const NO_DAMAGE_VELOCITY_THRESHOLD = 100
-const CRASH_VELOCITY_TRHESHOLD = 500
+const NO_DAMAGE_VELOCITY_THRESHOLD = 5
+const CRASH_VELOCITY_TRHESHOLD = 30
 @onready
 var main_thurster_particules = $ParticulesMT
 @onready
@@ -43,6 +50,7 @@ var animated_sprite = $AnimatedSprite2D
 @onready var rcs_right_sprite = $rcs_right
 @onready
 var integrity_text = $integrity_text
+@onready var planet: StaticBody2D = %Planet
 
 var rocket_integrity: float = 1
 var allow_one_step: bool
@@ -60,6 +68,10 @@ var rcs_left_force_vector = Vector2()
 var rcs_right_force_vector = Vector2()
 
 signal simulation_finished(state: Dictionary)
+
+var start_time: float = 0
+var end_time: float = 0
+var timer_display: bool = false
 
 func _ready() -> void:
 	Engine.time_scale = 1
@@ -104,24 +116,35 @@ func _physics_process(delta):
 	delta = delta / Engine.time_scale
 	self.delta = delta
 	
+	var gravity : Vector2 = planet.get_gravity_force(self.position, self.mass)
+	#print("gravity : " + str(gravity))
+	self.apply_central_force(gravity)
+	
+	if self.linear_velocity.y < -43.1 and not timer_display:
+		end_time = Time.get_ticks_msec()
+		print((end_time - start_time)/1000)
+		timer_display=true
+	
 	if Settings.control_mode == "manual":
 		# Check for player input to control the thruster
 		self.inputs['main_thrust'] = float(Input.is_action_pressed("ui_up"))
 		self.inputs['rcs_left_thrust'] = float(Input.is_action_pressed("ui_right"))
 		self.inputs['rcs_right_thrust'] = float(Input.is_action_pressed("ui_left"))
 		
-	# set Thruster at zero if no more fuel
-	self.inputs['main_thrust'] *= int(self.fuel > 0)
-	self.inputs['rcs_left_thrust'] *= int(self.fuel > 0)
-	self.inputs['rcs_right_thrust'] *= int(self.fuel > 0)
+	# set Thruster at zero if no more propellant
+	self.inputs['main_thrust'] *= int(self.propellant > 0)
+	self.inputs['rcs_left_thrust'] *= int(self.propellant > 0)
+	self.inputs['rcs_right_thrust'] *= int(self.propellant > 0)
 	
-	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * delta
-	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * delta
-	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * delta
+	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust']
+	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust']
+	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] 
 	
-	self.fuel -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
-	self.fuel = clamp(self.fuel, 0, self.initial_fuel)
-	self.fuel_tank_indicator.size = Vector2(self.initial_tank_size.x * (self.fuel/self.initial_fuel), self.fuel_tank_indicator.size.y)
+	self.propellant -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
+	self.propellant = clamp(self.propellant, 0, self.initial_propellant)
+	self.propellant_tank_indicator.size = Vector2(self.initial_tank_size.x * (self.propellant/self.initial_propellant), self.propellant_tank_indicator.size.y)
+	
+	self.mass = self.initial_propellant_mass*(self.propellant/self.initial_propellant) + self.empty_mass
 	
 	if rocket_integrity >= 0.05:
 		apply_force(
@@ -140,19 +163,20 @@ func _physics_process(delta):
 		main_thurster_particules.amount_ratio = self.inputs['main_thrust']
 		left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
 		right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
-	
-	if was_on_ground == false and is_on_ground():
-		was_on_ground = true
+		
+	if was_on_ground and is_on_ground():
 		emit_signal("simulation_finished", {"game_state": "victory", "score": self.rocket_integrity})
-	elif was_on_ground and is_on_ground():
-		pass
-	else:
-		was_on_ground = false
+	elif was_on_ground and not is_on_ground():
+		start_time = Time.get_ticks_msec()
+		print(start_time)
+		timer_display = false
+		print("on ground")
 	self.num_frame_computed += 1
 	
 	if self.debug:
 		queue_redraw()
 	self.last_know_velocity = self.linear_velocity.length()
+	was_on_ground = is_on_ground()
 
 func get_state():
 	return { 
@@ -162,7 +186,7 @@ func get_state():
 		'num_frame_computed': self.num_frame_computed,
 		'rocket_integrity': self.rocket_integrity,
 		'wind': self.wind_system.get_state(),
-		'fuel': self.fuel,
+		'propellant': self.propellant,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:
@@ -197,6 +221,7 @@ func crash():
 	main_thurster_particules.visible = false
 	left_thurster_particules.visible = false
 	right_thurster_particules.visible = false
+	$ColorRect.visible = false
 
 # Function to check if the rocket is on the ground
 func is_on_ground() -> bool:
@@ -207,6 +232,7 @@ func is_on_ground() -> bool:
 func _on_body_entered(body: Node) -> void:
 	var damage: float = 0.0
 	var hit_velocity = self.last_know_velocity
+	print(hit_velocity)
 	if hit_velocity < NO_DAMAGE_VELOCITY_THRESHOLD:
 		damage = 0.0
 	elif hit_velocity > CRASH_VELOCITY_TRHESHOLD:

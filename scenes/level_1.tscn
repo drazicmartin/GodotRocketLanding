@@ -3,3 +3,12 @@
 [ext_resource type="PackedScene" uid="uid://b6xvofyoblwm4" path="res://scenes/main.tscn" id="1_1603h"]
 
 [node name="MainScene" instance=ExtResource("1_1603h")]
+
+[node name="ParallaxStars" parent="ParallaxBackground" index="0"]
+motion_mirroring = Vector2(30000, 30000)
+
+[node name="Background" parent="ParallaxBackground/ParallaxPlanets" index="0"]
+position = Vector2(270, -18140)
+
+[node name="Planet" parent="." index="4"]
+color = Color(0.457684, 0.631252, 0.249831, 1)

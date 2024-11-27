@@ -33,6 +33,8 @@ You can control only 3 Thrusters
     'rotation': float(-pi - pi),
     'num_frame_computed': int,
     'rocket_integrity': float(0-1),
+    'propellant': int,
+    'wind': tuple(x,y),
 }
 ```
 
@@ -47,7 +49,7 @@ You can control only 3 Thrusters
     - [X] Propellant Tank
     - [X] Mass updating
 - [X] Wind System
-- [ ] Planet as sphere and dynamic gravity
+- [X] Planet as sphere and dynamic gravity
 - [ ] Atmospheric damage
 - [ ] Levels
 

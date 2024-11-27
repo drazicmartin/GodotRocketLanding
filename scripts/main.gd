@@ -3,7 +3,6 @@ extends Node2D
 var peer_id = null
 var message_received_flag = false  # Flag to track if a message has been received
 var run_once: bool = false
-var mode = "manual"
 
 @onready
 var Rocket = $Rocket

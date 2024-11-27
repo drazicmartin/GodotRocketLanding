@@ -7,5 +7,6 @@
 [node name="WindSystem" parent="." index="0"]
 wind_force = 100.0
 
-[node name="Rocket" parent="." index="3"]
-position = Vector2(0, -1080)
+[node name="Planet" parent="." index="3"]
+radius = 500.0
+color = Color(0.525101, 0.525101, 0.525101, 1)
