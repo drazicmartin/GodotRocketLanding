@@ -34,19 +34,6 @@ func get_gravity_force(position: Vector2, mass: float):
 func set_texture():
 	var diameter = radius * 2  # Texture size (width and height)
 	var image = Image.create_empty(diameter, diameter, false, Image.FORMAT_RGBA8)  # Create image
-	# Center of the sphere
-	var center = Vector2(radius, radius)
-	
-	image.fill(color)
-	
-	for y in range(diameter):
-		for x in range(diameter):
-			var pos = Vector2(x, y)
-			var dist = pos.distance_to(center)
-			
-			if dist > radius:
-				# Set pixels outside the sphere as transparent
-				image.set_pixel(x, y, Color(0, 0, 0, 0))
 	
 	# Assign the texture to the Sprite2D
 	sprite_2d.texture = ImageTexture.create_from_image(image)
