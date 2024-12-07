@@ -16,26 +16,33 @@ size_flags_vertical = 4
 script = ExtResource("1_dmf7c")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(580, 325)
+position = Vector2(960, 540)
 texture = ExtResource("2_w1nfm")
 
 [node name="Actions" type="Node" parent="."]
 script = ExtResource("3_5fms5")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 64.0
 offset_top = 155.0
-offset_right = 576.0
-offset_bottom = 485.0
+offset_right = -64.0
+offset_bottom = -155.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="Game VBoxContainer" type="VBoxContainer" parent="VBoxContainer2/HBoxContainer"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 
 [node name="Game" type="RichTextLabel" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
 custom_minimum_size = Vector2(0, 25)
@@ -70,8 +77,9 @@ layout_mode = 2
 text = "Exit"
 
 [node name="Server VBoxContainer" type="VBoxContainer" parent="VBoxContainer2/HBoxContainer"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="Server" type="RichTextLabel" parent="VBoxContainer2/HBoxContainer/Server VBoxContainer"]
 layout_mode = 2
