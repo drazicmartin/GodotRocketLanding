@@ -1,25 +1,30 @@
 shader_type canvas_item;
 
-// Exported parameters
-uniform float radius = 1; // Adjustable radius
-uniform vec4 planet_color = vec4(0.0, 1.0, 0.0, 1.0); // Green by default
+// Uniforms for properties
+uniform float radius;
+uniform vec4 color : source_color;
+uniform float atmosphere_size;
+uniform vec4 atmosphere_color : source_color;
+
+// Uniform for texture size in pixels
+uniform vec2 texture_size;
 
 void fragment() {
-    // Get the UV coordinates of the pixel (0 to 1 range)
-    vec2 uv = UV;
+    // Convert UV coordinates to pixel space
+    vec2 pixel_pos = UV * texture_size;
+    vec2 center = texture_size * 0.5; // Center in pixel space
 
-    // Center the UV coordinates (-0.5 to 0.5 range)
-    vec2 centered_uv = uv - vec2(0.5);
+    // Compute the distance in pixels
+    float dist = length(pixel_pos - center);
 
-    // Calculate the distance from the center of the texture
-    float dist = length(centered_uv);
-
-    // Check if the pixel is within the planet's radius
-    if (dist <= radius) {
-        // Set the planet's color to green
-        COLOR = planet_color;
+    if (dist < radius) {
+        COLOR = color; // Planet color
+	//} else if (dist < radius + atmosphere_size && dist > radius + atmosphere_size - 2.0) {
+		//COLOR = vec4(0,0,0,1);
+    } else if (dist < radius + atmosphere_size) {
+        float alpha = 1.0 - exp(-(dist - radius) / (radius+atmosphere_size));
+        COLOR = vec4(atmosphere_color.rgb, alpha); // Atmosphere gradient
     } else {
-        // Make the pixel transparent (outside the planet)
-        COLOR = vec4(0.0, 0.0, 0.0, 0.0); // Transparent
+        discard; // Outside the texture, make it transparent
     }
 }

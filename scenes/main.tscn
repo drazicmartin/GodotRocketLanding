@@ -1,4 +1,4 @@
-[gd_scene load_steps=80 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=79 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -8,7 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://cfsdtexxc8erl" path="res://assets/particules/smoke_01.png" id="5_idxnp"]
 [ext_resource type="Texture2D" uid="uid://dxh48weccp38c" path="res://assets/rocket/GRL_RCS_thruster_block_1-0.png" id="5_nvpx3"]
 [ext_resource type="Texture2D" uid="uid://bqsjlc3c2t7d0" path="res://assets/particules/smoke_04.png" id="5_xig4c"]
-[ext_resource type="Material" uid="uid://74mri0l5sc64" path="res://shaders/planet.tres" id="6_0oxfw"]
 [ext_resource type="Texture2D" uid="uid://cm32e3spkcl7c" path="res://assets/rocket/explosions/explosion 3.png" id="7_haxk0"]
 [ext_resource type="Script" path="res://scripts/actions.gd" id="9_1xfh8"]
 [ext_resource type="Script" path="res://scripts/wind.gd" id="12_nldry"]
@@ -493,6 +492,7 @@ follow_viewport_enabled = true
 
 [node name="ParallaxStars" type="ParallaxLayer" parent="ParallaxBackground"]
 motion_scale = Vector2(0.01, 0.01)
+motion_mirroring = Vector2(3000, 3000)
 
 [node name="Background" type="Sprite2D" parent="ParallaxBackground/ParallaxStars"]
 texture = ExtResource("2_lh2vd")
@@ -503,6 +503,7 @@ motion_scale = Vector2(0.2, 0.2)
 
 [node name="Background" type="Sprite2D" parent="ParallaxBackground/ParallaxPlanets"]
 position = Vector2(-10, -675)
+scale = Vector2(3, 3)
 texture = ExtResource("3_koujq")
 
 [node name="Actions" type="Node" parent="."]
@@ -514,8 +515,7 @@ unique_name_in_owner = true
 position = Vector2(0, 750)
 script = ExtResource("13_itfad")
 
-[node name="Sprite2D" type="Sprite2D" parent="Planet"]
-material = ExtResource("6_0oxfw")
+[node name="planet" type="Sprite2D" parent="Planet"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Planet"]
 shape = SubResource("CircleShape2D_17w3r")
@@ -644,7 +644,6 @@ metadata/_edit_use_anchors_ = true
 [node name="Camera2D" type="Camera2D" parent="Rocket"]
 position = Vector2(0, -40)
 ignore_rotation = false
-zoom = Vector2(1.5, 1.5)
 rotation_smoothing_enabled = true
 rotation_smoothing_speed = 100.0
 

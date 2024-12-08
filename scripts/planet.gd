@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var sprite_2d: Sprite2D = $Sprite2D
+@onready var planet_sprite_2d: Sprite2D = $planet
 @onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
 
 @export var mass: float = 5.9722e24 # earth mass (kg)
@@ -8,6 +8,8 @@ const G: float = 6.674
 
 @export var radius: float = 1500
 @export var color: Color = Color(1,1,1,1)
+@export var atmosphere_size : float = 600
+@export var atmosphere_color : Color = Color(0,0,1,1)
 
 func _ready():
 	self.mass = self.mass*Settings.MASS_SCALE
@@ -33,7 +35,25 @@ func get_gravity_force(position: Vector2, mass: float):
 
 func set_texture():
 	var diameter = radius * 2  # Texture size (width and height)
-	var image = Image.create_empty(diameter, diameter, false, Image.FORMAT_RGBA8)  # Create image
+	var planet_image = Image.create_empty(diameter+2*atmosphere_size, diameter+2*atmosphere_size, false, Image.FORMAT_RGBA8)  # Create image
 	
-	# Assign the texture to the Sprite2D
-	sprite_2d.texture = ImageTexture.create_from_image(image)
+	var shader = preload("res://shaders/planet.gdshader")
+	
+	var shader_material = ShaderMaterial.new()
+	
+	shader_material.shader = shader
+	
+	# Set the material on your Sprite2D node
+	planet_sprite_2d.material = shader_material
+	planet_sprite_2d.texture = ImageTexture.create_from_image(planet_image)
+	
+	# Ensure the Sprite2D has no texture
+	#planet_sprite_2d.texture = null
+	var texture_size = Vector2(diameter+2*atmosphere_size, diameter+2*atmosphere_size)
+
+	# Set the uniform values dynamically
+	shader_material.set_shader_parameter("radius", radius)
+	shader_material.set_shader_parameter("color", color)
+	shader_material.set_shader_parameter("atmosphere_size", atmosphere_size)
+	shader_material.set_shader_parameter("atmosphere_color", atmosphere_color)
+	shader_material.set_shader_parameter("texture_size", texture_size)

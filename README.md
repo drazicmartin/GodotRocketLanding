@@ -50,7 +50,10 @@ You can control only 3 Thrusters
     - [X] Mass updating
 - [X] Wind System
 - [X] Planet as sphere and dynamic gravity
-- [ ] Atmospheric damage
+- [ ] Atmospheric system
+    - [X] Visual Atmosphere
+    - [ ] Atmospheric damage
+    - [ ] Atmospheric viscosity
 - [ ] Levels
 
 ## Thanks

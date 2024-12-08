@@ -17,7 +17,7 @@ var propellant_mass : int = 3_400_000*Settings.MASS_SCALE # kg
 var initial_propellant_mass: int = propellant_mass
 
 @export 
-var propellant : float = 10
+var propellant : float = 100
 @onready var wind_system: Node2D = %WindSystem
 @onready var propellant_tank_indicator: ColorRect = $ColorRect
 @onready var initial_propellant = propellant
@@ -34,7 +34,7 @@ const DEFAULT_INPUTS = {
 	"rcs_left_thrust": 0.0,
 	"rcs_right_thrust": 0.0
 }
-const NO_DAMAGE_VELOCITY_THRESHOLD = 5
+const NO_DAMAGE_VELOCITY_THRESHOLD = 7
 const CRASH_VELOCITY_TRHESHOLD = 30
 @onready
 var main_thurster_particules = $ParticulesMT
