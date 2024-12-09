@@ -11,6 +11,8 @@ const G: float = 6.674
 @export var atmosphere_size : float = 600
 @export var atmosphere_color : Color = Color(0,0,1,1)
 
+var shader_material: ShaderMaterial
+
 func _ready():
 	self.mass = self.mass*Settings.MASS_SCALE
 	# Make sure gravity is controlled by planet not godot default 
@@ -33,23 +35,27 @@ func get_gravity_force(position: Vector2, mass: float):
 	#print("dist : " + str(dist))
 	return dir * calculate_gravitational_force(self.mass, mass, dist)
 
-func set_texture():
-	var diameter = radius * 2  # Texture size (width and height)
-	var planet_image = Image.create_empty(diameter+2*atmosphere_size, diameter+2*atmosphere_size, false, Image.FORMAT_RGBA8)  # Create image
+func _draw():
+	# Define the size of the drawing area
+	var diameter = (radius + atmosphere_size) * 2
+	var rect = Rect2(Vector2(-diameter / 2, -diameter / 2), Vector2(diameter, diameter))
 	
+	# Draw the rectangle with the shader
+	set_material(shader_material)  # Assign the shader material
+	draw_rect(rect, Color(1, 1, 1))  # Render the rectangle
+
+func set_texture():
+	var diameter = (radius + atmosphere_size) * 2
 	var shader = preload("res://shaders/planet.gdshader")
 	
-	var shader_material = ShaderMaterial.new()
 	
+	shader_material = ShaderMaterial.new()
 	shader_material.shader = shader
 	
 	# Set the material on your Sprite2D node
 	planet_sprite_2d.material = shader_material
-	planet_sprite_2d.texture = ImageTexture.create_from_image(planet_image)
 	
-	# Ensure the Sprite2D has no texture
-	#planet_sprite_2d.texture = null
-	var texture_size = Vector2(diameter+2*atmosphere_size, diameter+2*atmosphere_size)
+	var texture_size = Vector2(diameter, diameter)
 
 	# Set the uniform values dynamically
 	shader_material.set_shader_parameter("radius", radius)

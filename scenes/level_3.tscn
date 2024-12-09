@@ -5,5 +5,5 @@
 [node name="MainScene" instance=ExtResource("1_hcyo8")]
 
 [node name="Planet" parent="." index="3"]
-radius = 750.0
+radius = 1200.0
 color = Color(0.621214, 0.277319, 0.364553, 1)

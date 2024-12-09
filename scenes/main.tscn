@@ -521,7 +521,6 @@ script = ExtResource("13_itfad")
 shape = SubResource("CircleShape2D_17w3r")
 
 [node name="Rocket" type="RigidBody2D" parent="."]
-position = Vector2(0, -4)
 disable_mode = 1
 physics_material_override = SubResource("PhysicsMaterial_l13pa")
 can_sleep = false
