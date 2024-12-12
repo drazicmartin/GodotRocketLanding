@@ -50,6 +50,7 @@ You can control only 3 Thrusters
     - [X] Mass updating
 - [X] Wind System
 - [X] Planet as sphere and dynamic gravity
+- [X] Support Big Number
 - [ ] Atmospheric system
     - [X] Visual Atmosphere
     - [ ] Atmospheric damage
@@ -61,3 +62,4 @@ You can control only 3 Thrusters
 - [Simon Celeste](https://github.com/Celeste-VANDAMME), for the design of the rocket !
 - [Kenney.nl](https://www.kenney.nl/), for the particules sprite
 - [Sinestesia Studio](https://itch.io/profile/sinestesia), for explosion animation
+- [ChronoDK](https://github.com/ChronoDK/GodotBigNumberClass), for Big Number class

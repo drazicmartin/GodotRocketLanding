@@ -1,4 +1,4 @@
-[gd_scene load_steps=79 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=78 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -14,8 +14,6 @@
 [ext_resource type="Script" path="res://scripts/planet.gd" id="13_itfad"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_17w3r"]
-
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_l13pa"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dar0e"]
 blend_mode = 1
@@ -522,7 +520,6 @@ shape = SubResource("CircleShape2D_17w3r")
 
 [node name="Rocket" type="RigidBody2D" parent="."]
 disable_mode = 1
-physics_material_override = SubResource("PhysicsMaterial_l13pa")
 can_sleep = false
 continuous_cd = 2
 contact_monitor = true

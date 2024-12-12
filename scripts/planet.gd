@@ -3,7 +3,9 @@ extends Node2D
 @onready var planet_sprite_2d: Sprite2D = $planet
 @onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
 
-@export var mass: float = 5.9722e24 # earth mass (kg)
+@export var mass_mantissa = 2
+@export var mass_exponent = 24
+@onready var mass: Big = Big.new(mass_mantissa, mass_exponent)
 const G: float = 6.674
 
 @export var radius: float = 1500
@@ -14,7 +16,8 @@ const G: float = 6.674
 var shader_material: ShaderMaterial
 
 func _ready():
-	self.mass = self.mass*Settings.MASS_SCALE
+	self.mass = self.mass.timesEquals(Settings.MASS_SCALE)
+	print("Planet mass : ", mass.toScientific())
 	# Make sure gravity is controlled by planet not godot default 
 	PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY, 0)
 	
@@ -23,15 +26,17 @@ func _ready():
 	set_texture()
 	collision_shape_2d.shape.radius = radius
 
-func calculate_gravitational_force(m1: float, m2: float, distance: float) -> float:
-	if distance == 0:  # Avoid division by zero.
-		return 0
-	return G * m1 * m2 / pow(distance*Settings.DIST_SCALE, 2)
+func calculate_gravitational_force(m1: Big, m2: float, distance: float) -> float:
+	if distance <= 0: # Avoid division by zero.
+		return 0.0
+	var dist = Big.new(distance).timesEquals(Settings.DIST_SCALE)
+	var g : Big = Big.new(1, 0)
+	return g.timesEquals(m1).timesEquals(G).timesEquals(m2).dividedBy(Big.power(dist,2)).toFloat()
 
 func get_gravity_force(position: Vector2, mass: float):
 	var dir = (self.position - position).normalized()
 	#print("dir : " + str(dir))
-	var dist = (self.position - position).length()
+	var dist = (self.position - position).length() - 0.95*radius
 	#print("dist : " + str(dist))
 	return dir * calculate_gravitational_force(self.mass, mass, dist)
 
