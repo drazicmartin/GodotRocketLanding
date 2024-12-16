@@ -520,6 +520,7 @@ shape = SubResource("CircleShape2D_17w3r")
 
 [node name="Rocket" type="RigidBody2D" parent="."]
 disable_mode = 1
+gravity_scale = 0.0
 can_sleep = false
 continuous_cd = 2
 contact_monitor = true

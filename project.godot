@@ -48,3 +48,8 @@ echap={
 
 common/max_physics_steps_per_frame=30
 2d/default_gravity=0.0
+2d/default_linear_damp=0.0
+2d/default_angular_damp=0.0
+2d/sleep_threshold_linear=0.0
+2d/sleep_threshold_angular=0.0
+2d/time_before_sleep=10.0
