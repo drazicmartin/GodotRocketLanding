@@ -12,6 +12,8 @@ const G: float = 6.674
 @export var color: Color = Color(1,1,1,1)
 @export var atmosphere_size : float = 600
 @export var atmosphere_color : Color = Color(0,0,1,1)
+@export var rho_0 : float = 1
+@export var drag_coefficient : float = 0.05
 
 var shader_material: ShaderMaterial
 
@@ -40,10 +42,44 @@ func get_gravity_force(position: Vector2, mass: float):
 	#print("dist : " + str(dist))
 	return dir * calculate_gravitational_force(self.mass, mass, dist)
 
+func cosine_similarity(vec1: Vector2, vec2: Vector2) -> float:
+	# Dot product of the vectors
+	var dot_product = vec1.dot(vec2)
+	# Magnitudes of the vectors
+	var magnitude1 = vec1.length()
+	var magnitude2 = vec2.length()
+	
+	# Avoid division by zero
+	if magnitude1 == 0 or magnitude2 == 0:
+		return 0.0
+	
+	# Cosine similarity
+	return dot_product / (magnitude1 * magnitude2)
+
+func get_drag_force(position: Vector2, velocity: Vector2, cross_section_area : float) -> Vector2:
+	var altitude = (self.position - position).length() - self.radius
+	if altitude > self.atmosphere_size:
+		return Vector2(0,0)
+	
+	var air_density = rho_0 * exp(-altitude / self.atmosphere_size)
+	var drag_force = 0.5 * drag_coefficient * air_density * velocity.length_squared() * cross_section_area
+	return - velocity.normalized() * drag_force
+
+func get_altitude(position: Vector2):
+	return (self.position - position).length() - self.radius
+
+func get_temperature(altitude : float):
+	if altitude > self.atmosphere_size:
+		return 0
+	return 15 * (1-(altitude/self.atmosphere_size)) # Linear decrease, ~15°C at sea level
+
+func get_air_density(altitude: float):
+	return rho_0 * exp(-altitude / self.atmosphere_size)
+
 func _draw():
 	# Define the size of the drawing area
 	var diameter = (radius + atmosphere_size) * 2
-	var rect = Rect2(Vector2(-diameter / 2, -diameter / 2), Vector2(diameter, diameter))
+	var rect = Rect2(Vector2(-diameter/2,-diameter/2), Vector2(diameter, diameter))
 	
 	# Draw the rectangle with the shader
 	set_material(shader_material)  # Assign the shader material

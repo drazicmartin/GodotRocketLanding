@@ -52,7 +52,7 @@ var animated_sprite = $AnimatedSprite2D
 var integrity_text = $integrity_text
 @onready var planet: StaticBody2D = %Planet
 
-var rocket_integrity: float = 1
+var integrity: float = 1
 var allow_one_step: bool
 var is_thrusting = false
 var is_rcs_left_on = false
@@ -66,6 +66,23 @@ var last_know_velocity: float = 0
 var main_thurster_force_vector = Vector2()
 var rcs_left_force_vector = Vector2()
 var rcs_right_force_vector = Vector2()
+
+# Hull stress parameters
+var hull_stress : float = 0.0
+const max_hull_stress_threshold_damage = 5000
+const min_hull_stress_threshold_damage = 2000
+# Heating parameters
+var temperature : float = 15
+const heat_transfer_coefficient = 1e-2     # Example value for k
+const specific_heat_capacity = 900.0       # J/(kg·K), for aluminum
+const max_thermal_threshold_damage = 2000
+const min_thermal_threshold_damage = 500
+# Cooling parameters
+var emissivity = 0.9               # Emissivity of the rocket's surface (e.g., 0.9 for painted metal)
+var radiating_area = 10.0          # Surface area exposed to radiative cooling (m²)
+var convective_coefficient = 25.0  # Typical value in W/(m²·K) for natural convection
+var surface_area = 10.0            # Surface area exposed to convection (m²)
+var ambient_temperature = 300.0    # Ambient temperature in Kelvin (e.g., ~27°C = 300 K)
 
 signal simulation_finished(state: Dictionary)
 
@@ -112,13 +129,66 @@ func _draw() -> void:
 			2
 		)
 
+func update_thermal(delta):
+	# Calculate air density based on altitude
+	var altitude = planet.get_altitude(self.position)
+	var air_density = planet.get_air_density(altitude)
+	var ambient_temperature = planet.get_temperature(altitude)
+	
+	# Calculate velocity and heat flux
+	var velocity = self.linear_velocity.length()
+	var heat_flux = self.heat_transfer_coefficient * air_density * pow(velocity, 3)
+	
+	# Radiative cooling
+	var radiative_cooling = self.emissivity * self.radiating_area * 5.67e-8 * (pow(temperature, 4) - pow(ambient_temperature, 4))
+	
+	# Convective cooling
+	var convective_cooling = self.convective_coefficient * self.surface_area * (temperature - ambient_temperature)
+	
+	# Net heat flux
+	var net_heat_flux = heat_flux - radiative_cooling - convective_cooling
+	
+	# Update temperature
+	var delta_temperature = (net_heat_flux * delta) / (self.mass * self.specific_heat_capacity)
+	temperature += delta_temperature
+	
+	# Clamp temperature to not go below ambient
+	if temperature < ambient_temperature:
+		temperature = ambient_temperature
+
+func apply_thermal_damage(delta : float):
+	# Check for thermal damage
+	var thermal_damage = 0
+	if temperature > min_thermal_threshold_damage:
+		thermal_damage += delta * (temperature / (max_thermal_threshold_damage))
+	self.integrity -= thermal_damage
+
+func update_hull_stress(drag_force: Vector2, cross_section_area: float):
+	# Calculate stress on the rocket
+	self.hull_stress = drag_force.length() / cross_section_area
+
+func apply_hull_stress_damage(delta):
+	var hull_damage = 0
+	if self.hull_stress > min_hull_stress_threshold_damage:
+		hull_damage += delta * (self.hull_stress / (max_hull_stress_threshold_damage))
+	self.integrity -= hull_damage
+
+func rotation_to_direction_clockwise(rotation: float) -> Vector2:
+	return Vector2(sin(rotation), -cos(rotation))
+
 func _physics_process(delta):
 	delta = delta / Engine.time_scale
 	self.delta = delta
 	
-	var gravity : Vector2 = planet.get_gravity_force(self.position, self.mass)
-	#print("gravity : " + str(gravity))
-	self.apply_central_force(gravity)
+	var gravity_froce : Vector2 = planet.get_gravity_force(self.position, self.mass)
+	var cross_section_area = 0.8*(1-abs(planet.cosine_similarity(self.linear_velocity, rotation_to_direction_clockwise(self.rotation))))+0.2
+	var drag_force : Vector2 = planet.get_drag_force(self.position, self.linear_velocity, cross_section_area)
+	
+	self.apply_central_force(gravity_froce)
+	self.apply_central_force(drag_force)
+	
+	update_thermal(delta)
+	update_hull_stress(drag_force, cross_section_area)
 	
 	if self.linear_velocity.y < -43.1 and not timer_display:
 		end_time = Time.get_ticks_msec()
@@ -146,7 +216,7 @@ func _physics_process(delta):
 	
 	self.mass = self.initial_propellant_mass*(self.propellant/self.initial_propellant) + self.empty_mass
 	
-	if rocket_integrity >= 0.05:
+	if integrity >= 0.05:
 		apply_force(
 			self.main_thurster_force_vector, 
 			Vector2()
@@ -163,9 +233,12 @@ func _physics_process(delta):
 		main_thurster_particules.amount_ratio = self.inputs['main_thrust']
 		left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
 		right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
+	
+	apply_thermal_damage(delta)
+	apply_hull_stress_damage(delta)
 		
 	if was_on_ground and is_on_ground():
-		emit_signal("simulation_finished", {"game_state": "victory", "score": self.rocket_integrity})
+		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
 	elif was_on_ground and not is_on_ground():
 		start_time = Time.get_ticks_msec()
 		print(start_time)
@@ -177,6 +250,10 @@ func _physics_process(delta):
 		queue_redraw()
 	self.last_know_velocity = self.linear_velocity.length()
 	was_on_ground = is_on_ground()
+	integrity_text.text = "[center]%s[/center]" % int(self.integrity*100)
+	self.integrity = max(0,self.integrity)
+	if self.integrity <= 0.0:
+		crash()
 
 func get_state():
 	return { 
@@ -184,9 +261,10 @@ func get_state():
 		'velocity': self.linear_velocity,
 		'rotation': self.rotation,
 		'num_frame_computed': self.num_frame_computed,
-		'rocket_integrity': self.rocket_integrity,
+		'rocket_integrity': self.integrity,
 		'wind': self.wind_system.get_state(),
 		'propellant': self.propellant,
+		'temperature': self.temperature,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:
@@ -236,11 +314,7 @@ func _on_body_entered(body: Node) -> void:
 	if hit_velocity < NO_DAMAGE_VELOCITY_THRESHOLD:
 		damage = 0.0
 	elif hit_velocity > CRASH_VELOCITY_TRHESHOLD:
-		damage = self.rocket_integrity
+		damage = self.integrity
 	else:
 		damage = (hit_velocity - NO_DAMAGE_VELOCITY_THRESHOLD) / CRASH_VELOCITY_TRHESHOLD
-	self.rocket_integrity -= damage
-	integrity_text.text = "[center]%s[/center]" % int(self.rocket_integrity*100)
-	if self.rocket_integrity <= 0.0:
-		crash()
-	
+	self.integrity -= damage

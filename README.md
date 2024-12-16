@@ -51,11 +51,24 @@ You can control only 3 Thrusters
 - [X] Wind System
 - [X] Planet as sphere and dynamic gravity
 - [X] Support Big Number
-- [ ] Atmospheric system
-    - [X] Visual Atmosphere
-    - [ ] Atmospheric damage
-    - [ ] Atmospheric viscosity
+- [X] Atmospheric system
+    - [X] Visual Atmosphere (Shader)
+    - [X] Atmospheric damage
+        - [X] Hull stress damage
+        - [X] Thermal damage
+    - [X] Atmospheric drag
+        - $F_d​=\frac{1}{2} * ​C_d * ρ * v^2 * A$
+            - C_d​: Drag coefficient (depends on the rocket's shape and surface roughness)
+            - ρ: Air density (varies with altitude)
+            - v: Rocket velocity relative to the air
+            - A: Cross-sectional area of the rocket
+        - $ρ=ρ_0 * ​exp(−\frac{h}{H​})$
 - [ ] Levels
+    - Level 1
+    - Level 2
+    - Level 3
+    - Level 4
+    - Need more
 
 ## Thanks
 - [The1Muneeb](https://deep-fold.itch.io/space-background-generator), for space background generator.
@@ -63,3 +76,4 @@ You can control only 3 Thrusters
 - [Kenney.nl](https://www.kenney.nl/), for the particules sprite
 - [Sinestesia Studio](https://itch.io/profile/sinestesia), for explosion animation
 - [ChronoDK](https://github.com/ChronoDK/GodotBigNumberClass), for Big Number class
+- [chatGPT](https://chatgpt.com/), for wise advice and tips
