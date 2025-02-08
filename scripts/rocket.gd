@@ -53,6 +53,7 @@ var integrity_text = $integrity_text
 @onready var planet: StaticBody2D = %Planet
 
 var integrity: float = 1
+@export var destructible: bool = true
 var allow_one_step: bool
 var is_thrusting = false
 var is_rcs_left_on = false
@@ -234,16 +235,15 @@ func _physics_process(delta):
 		left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
 		right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
 	
-	apply_thermal_damage(delta)
-	apply_hull_stress_damage(delta)
+	if self.destructible:
+		apply_thermal_damage(delta)
+		apply_hull_stress_damage(delta)
 		
 	if was_on_ground and is_on_ground():
 		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
 	elif was_on_ground and not is_on_ground():
 		start_time = Time.get_ticks_msec()
-		print(start_time)
 		timer_display = false
-		print("on ground")
 	self.num_frame_computed += 1
 	
 	if self.debug:
@@ -308,9 +308,10 @@ func is_on_ground() -> bool:
 	return raycast_left.is_colliding() and raycast_right.is_colliding()
 
 func _on_body_entered(body: Node) -> void:
+	if not destructible:
+		return
 	var damage: float = 0.0
 	var hit_velocity = self.last_know_velocity
-	print(hit_velocity)
 	if hit_velocity < NO_DAMAGE_VELOCITY_THRESHOLD:
 		damage = 0.0
 	elif hit_velocity > CRASH_VELOCITY_TRHESHOLD:
