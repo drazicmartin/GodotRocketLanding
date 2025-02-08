@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var planet_sprite_2d: Sprite2D = $planet
 @onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
+@onready var rocket: RigidBody2D = $"../Rocket"
 
 @export var mass_mantissa = 2
 @export var mass_exponent = 24
@@ -26,7 +27,13 @@ func _ready():
 	self.position = Vector2(0,self.radius)
 	
 	set_texture()
-	collision_shape_2d.shape.radius = radius
+	collision_shape_2d.position = Vector2(0,-radius)
+
+func _physics_process(delta: float) -> void:
+	var dir := self.global_position.direction_to(self.rocket.global_position)
+	var pos = dir*self.radius
+	collision_shape_2d.position = pos
+	collision_shape_2d.shape.normal = dir
 
 func calculate_gravitational_force(m1: Big, m2: float, distance: float) -> float:
 	if distance <= 0: # Avoid division by zero.

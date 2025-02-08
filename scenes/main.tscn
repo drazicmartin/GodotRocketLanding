@@ -13,7 +13,7 @@
 [ext_resource type="Script" path="res://scripts/wind.gd" id="12_nldry"]
 [ext_resource type="Script" path="res://scripts/planet.gd" id="13_itfad"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_17w3r"]
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_a8c1y"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dar0e"]
 blend_mode = 1
@@ -516,7 +516,8 @@ script = ExtResource("13_itfad")
 [node name="planet" type="Sprite2D" parent="Planet"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Planet"]
-shape = SubResource("CircleShape2D_17w3r")
+process_mode = 3
+shape = SubResource("WorldBoundaryShape2D_a8c1y")
 
 [node name="Rocket" type="RigidBody2D" parent="."]
 disable_mode = 1
@@ -526,25 +527,6 @@ continuous_cd = 2
 contact_monitor = true
 max_contacts_reported = 10
 script = ExtResource("2_fbuok")
-
-[node name="integrity_text" type="RichTextLabel" parent="Rocket"]
-z_index = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -5.0
-offset_top = -40.0
-offset_right = 95.0
-offset_bottom = 60.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.1, 0.1)
-theme_override_font_sizes/normal_font_size = 50
-bbcode_enabled = true
-text = "[center]100[/center]"
-metadata/_edit_use_anchors_ = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Rocket"]
 scale = Vector2(0.5, 0.5)
@@ -620,6 +602,12 @@ target_position = Vector2(0, 25)
 [node name="center of mass" type="Node2D" parent="Rocket"]
 position = Vector2(0, -26)
 
+[node name="Camera2D" type="Camera2D" parent="Rocket"]
+position = Vector2(0, -40)
+ignore_rotation = false
+rotation_smoothing_enabled = true
+rotation_smoothing_speed = 100.0
+
 [node name="ColorRect" type="ColorRect" parent="Rocket"]
 custom_minimum_size = Vector2(0, 5)
 anchors_preset = 8
@@ -627,10 +615,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -8.0
-offset_top = -50.0
-offset_right = 8.0
-offset_bottom = -43.0
+offset_left = -48.0
+offset_top = -353.0
+offset_right = 52.0
+offset_bottom = -343.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 6
@@ -638,10 +626,22 @@ size_flags_vertical = 6
 color = Color(1, 0.306274, 0.573644, 0.686275)
 metadata/_edit_use_anchors_ = true
 
-[node name="Camera2D" type="Camera2D" parent="Rocket"]
-position = Vector2(0, -40)
-ignore_rotation = false
-rotation_smoothing_enabled = true
-rotation_smoothing_speed = 100.0
+[node name="integrity_text" type="RichTextLabel" parent="Rocket"]
+z_index = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -312.0
+offset_top = -354.0
+offset_right = -212.0
+offset_bottom = -254.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/normal_font_size = 50
+bbcode_enabled = true
+text = "[center]100[/center]"
+metadata/_edit_use_anchors_ = true
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]

@@ -13,5 +13,3 @@ mass_mantissa = 8
 mass_exponent = 20
 radius = 1000.0
 color = Color(0.463243, 0.803212, 0.881541, 1)
-atmosphere_size = 600.0
-atmosphere_color = Color(0, 0, 1, 1)

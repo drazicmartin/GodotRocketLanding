@@ -3,11 +3,3 @@
 [ext_resource type="PackedScene" uid="uid://b6xvofyoblwm4" path="res://scenes/main.tscn" id="1_4qsm1"]
 
 [node name="MainScene" instance=ExtResource("1_4qsm1")]
-
-[node name="Planet" parent="." index="3"]
-mass_mantissa = 2
-mass_exponent = 24
-radius = 1500.0
-color = Color(1, 1, 1, 1)
-atmosphere_size = 600.0
-atmosphere_color = Color(0, 0, 1, 1)
