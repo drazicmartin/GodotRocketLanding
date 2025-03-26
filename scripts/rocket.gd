@@ -8,6 +8,8 @@ var randomize_init : bool = false
 var initial_direction : Vector2 = Vector2(0,0)
 @export
 var initial_velocity : float = 0
+@export 
+var gravity_active := true
 
 
 var second_stage_empty_mass : int = 100_000*Settings.MASS_SCALE
@@ -185,7 +187,8 @@ func _physics_process(delta):
 	var cross_section_area = 0.8*(1-abs(planet.cosine_similarity(self.linear_velocity, rotation_to_direction_clockwise(self.rotation))))+0.2
 	var drag_force : Vector2 = planet.get_drag_force(self.position, self.linear_velocity, cross_section_area)
 	
-	self.apply_central_force(gravity_froce)
+	if self.gravity_active:
+		self.apply_central_force(gravity_froce)
 	self.apply_central_force(drag_force)
 	
 	update_thermal(delta)
