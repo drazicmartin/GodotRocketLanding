@@ -11,6 +11,10 @@ var initial_velocity : float = 0
 @export 
 var gravity_active := true
 
+@export
+var invinsible_step := 10
+@export
+var invinsible_start := true
 
 var second_stage_empty_mass : int = 100_000*Settings.MASS_SCALE
 var second_stage_propellant_mass: int = 1_200_000*Settings.MASS_SCALE
@@ -91,16 +95,19 @@ signal simulation_finished(state: Dictionary)
 
 var start_time: float = 0
 var end_time: float = 0
-var timer_display: bool = false
 
 func _ready() -> void:
 	Engine.time_scale = 1
 	if randomize_init:
 		# Randomize initial values
 		initial_direction = Vector2(randf_range(-0.5, 0.5), randf_range(0, 1)).normalized() # Random velocity between -100 and 100 for both x and y
-		initial_velocity = randf_range(100,1000)
-		self.position = Vector2(randf_range(-100, 100), randf_range(-400, 0))  # Random position in the defined range
+		initial_velocity = randf_range(-200,200)
+		self.position = Vector2(randf_range(-100, 100), randf_range(-400, -100))  # Random position in the defined range
 		self.rotation = randf_range(deg_to_rad(-10), deg_to_rad(10))  # Random rotation between 0 and 360 degrees (in radians)
+		self.invinsible_start = true
+	
+	if self.invinsible_start:
+		self.destructible = false
 	
 	# Set inital state
 	self.linear_velocity = initial_velocity * initial_direction
@@ -194,11 +201,6 @@ func _physics_process(delta):
 	update_thermal(delta)
 	update_hull_stress(drag_force, cross_section_area)
 	
-	if self.linear_velocity.y < -43.1 and not timer_display:
-		end_time = Time.get_ticks_msec()
-		print((end_time - start_time)/1000)
-		timer_display=true
-	
 	if Settings.control_mode == "manual":
 		# Check for player input to control the thruster
 		self.inputs['main_thrust'] = float(Input.is_action_pressed("ui_up"))
@@ -246,7 +248,6 @@ func _physics_process(delta):
 		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
 	elif was_on_ground and not is_on_ground():
 		start_time = Time.get_ticks_msec()
-		timer_display = false
 	self.num_frame_computed += 1
 	
 	if self.debug:
@@ -257,6 +258,12 @@ func _physics_process(delta):
 	self.integrity = max(0,self.integrity)
 	if self.integrity <= 0.0:
 		crash()
+	
+	if self.invinsible_start:
+		invinsible_step -= 1
+		if self.invinsible_step <= 0:
+			self.destructible = true
+			self.invinsible_start = false
 
 func get_state():
 	return { 
@@ -291,7 +298,7 @@ func set_inputs(inputs: Dictionary):
 
 func crash():
 	emit_signal("simulation_finished", {"game_state": "crash"})
-	print("Rocket Crashed")
+	# print("Rocket Crashed")
 	self.sleeping = true
 	var k = 3  # Scale factor
 	animated_sprite.play("explosion")
