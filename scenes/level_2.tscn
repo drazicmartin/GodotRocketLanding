@@ -15,4 +15,4 @@ color = Color(0.525101, 0.525101, 0.525101, 1)
 atmosphere_size = 2500.0
 
 [node name="Rocket" parent="." index="4"]
-position = Vector2(0, -100)
+position = Vector2(0, -250)

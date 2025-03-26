@@ -13,3 +13,7 @@ mass_mantissa = 8
 mass_exponent = 20
 radius = 1000.0
 color = Color(0.463243, 0.803212, 0.881541, 1)
+
+[node name="Rocket" parent="." index="4"]
+position = Vector2(-69, -467)
+rotation = -0.2873
