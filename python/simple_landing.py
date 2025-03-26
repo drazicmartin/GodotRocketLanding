@@ -35,8 +35,8 @@ class SimpleLanding(GRL):
 
         return inputs
 
-async def main(rocket: GRL, level_name='random_level'):
-    rocket.start_game(show_window=True)
+async def main(rocket: GRL, level_name='random_level', show_window=False):
+    rocket.start_game(show_window=show_window)
     await rocket.ignition(level_name=level_name)
     await rocket.stop()
     print("Done!")
@@ -46,5 +46,5 @@ if __name__ == "__main__":
         port=65000
     )
     asyncio.run(
-        main(rocket)
+        main(rocket, show_window=True),
     )
