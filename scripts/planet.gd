@@ -9,7 +9,7 @@ extends Node2D
 @onready var mass: Big = Big.new(mass_mantissa, mass_exponent)
 const G: float = 6.674
 
-@export var radius: float = 1500
+@export var radius: float = 50000
 @export var color: Color = Color(1,1,1,1)
 @export var atmosphere_size : float = 600
 @export var atmosphere_color : Color = Color(0,0,1,1)
