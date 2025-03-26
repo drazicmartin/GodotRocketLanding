@@ -56,6 +56,7 @@ class GRL:
     async def ignition(self, level_name:str = "level_1"):
         await self.connect()
         await self.change_level(level_name)
+        await self.set_scripted()
         state = await self.get_state()
         while True:
             if "game_state" in state:
@@ -87,6 +88,11 @@ class GRL:
         input = self.get_change_level_input(level_name)
         await self.send_data(input)
         await self.receive_data()
+
+    async def set_scripted(self):
+        await self.send_data({
+            'action': 'set_scripted'
+        })
 
     def get_change_level_input(self, level_name):
         return  {

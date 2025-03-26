@@ -16,6 +16,8 @@ func handle_action(data):
 		self.restart_level()
 	elif action == "get_state":
 		request_state.emit(self.peer_id)
+	elif action == "set_scripted":
+		Settings.control_mode = "script"
 	elif action == "quit":
 		self.quit()
 	elif action == "change_level":
