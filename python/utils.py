@@ -1,8 +1,13 @@
-import websockets
+import asyncio
 import json
-from abc import ABC, abstractmethod
 import subprocess
-import time
+from abc import ABC, abstractmethod
+
+import gymnasium as gym
+import numpy as np
+import websockets
+from gymnasium import spaces
+
 
 class GRL:
     def __init__(
@@ -109,3 +114,70 @@ class GRL:
         return {
             'action':  'restart_level'
         }
+
+class GRLGym(gym.Env):
+    metadata = {"render_modes": ["human"]}
+
+    def __init__(
+            self, 
+            action_space_mode="discrete" #  discrete or continious
+        ):
+        super().__init__()
+        
+        # Initialize the Godot environment
+        self.env = GRL()
+        
+        if action_space_mode == "discrete":
+            # Define action and observation spaces
+            self.action_space = spaces.Discrete(3)  # Example: 4 possible actions
+            self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)
+        else:
+            self.action_space = spaces.Box(low=0.0, high=1.0, shape=(3,), dtype=np.float32)
+            self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)
+
+        # Start game
+        self.env.start_game(show_window=False)
+        asyncio.run(self.env.connect())
+
+    @abstractmethod
+    def get_reward(self, state):
+        """
+        Computes the reward based on the given game state.
+
+        This method should be implemented by the user to define a custom reward function.
+        The reward function will determine how the agent learns by assigning positive or
+        negative values based on the current state of the environment.
+
+        :param state: A dictionary containing the current game state, including relevant 
+                    information such as position, velocity, fuel level, etc.
+        :return: A float representing the computed reward.
+        """
+        pass
+
+    def step(self, action):
+        # Send action to the Godot server
+        asyncio.run(self.env.send_data(action))
+
+        # Receive state
+        state = asyncio.run(self.env.receive_data())
+
+        # Extract data from state
+        obs = np.array(state["observation"])
+        reward = state.get("reward", 0)
+        done = state.get("done", False)
+
+        return obs, reward, done, False, {}
+
+    def reset(self, seed=None, options=None):
+        # Reset game level
+        asyncio.run(self.env.change_level("random_level"))
+
+        # Get initial state
+        state = asyncio.run(self.env.get_state())
+        return np.array(state["observation"]), {}
+
+    def render(self, mode="human"):
+        pass  # Rendering handled in Godot
+
+    def close(self):
+        asyncio.run(self.env.quit_game())
