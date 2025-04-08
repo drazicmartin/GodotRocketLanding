@@ -60,6 +60,11 @@ var animated_sprite = $AnimatedSprite2D
 var integrity_text = $integrity_text
 @onready var planet: StaticBody2D = %Planet
 
+@onready
+var raycast_left = $RayCast2DLeft
+@onready
+var raycast_right = $RayCast2DRight
+
 var integrity: float = 1
 @export var destructible: bool = true
 var allow_one_step: bool
@@ -71,6 +76,9 @@ var num_frame_computed: int = 0
 var inputs : Dictionary = DEFAULT_INPUTS.duplicate()
 var delta: float = 0.0
 var last_know_velocity: float = 0
+var right_leg_contact: bool = false
+var left_leg_contact: bool = false
+var crashed : bool = false
 
 var main_thurster_force_vector = Vector2()
 var rcs_left_force_vector = Vector2()
@@ -247,10 +255,6 @@ func _physics_process(delta):
 		apply_thermal_damage(delta)
 		apply_hull_stress_damage(delta)
 		
-	if was_on_ground and is_on_ground():
-		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
-	elif was_on_ground and not is_on_ground():
-		start_time = Time.get_ticks_msec()
 	self.num_frame_computed += 1
 	
 	if self.debug:
@@ -262,6 +266,11 @@ func _physics_process(delta):
 	if self.integrity <= 0.0:
 		crash()
 	
+	if was_on_ground and is_on_ground() and not self.crashed:
+		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
+	elif was_on_ground and not is_on_ground():
+		start_time = Time.get_ticks_msec()
+	
 	if self.invinsible_start:
 		invinsible_step -= 1
 		if self.invinsible_step <= 0:
@@ -269,7 +278,7 @@ func _physics_process(delta):
 			self.invinsible_start = false
 
 func get_state():
-	return { 
+	return {
 		'position': self.position,
 		'linear_velocity': self.linear_velocity,
 		'angular_velocity': self.angular_velocity,
@@ -303,11 +312,12 @@ func set_inputs(inputs: Dictionary):
 		self.inputs[key] = inputs[key]
 
 func crash():
+	self.crashed = true
 	emit_signal("simulation_finished", {"game_state": "crash"})
 	if Settings.debug: print("Rocket Crashed")
 	self.sleeping = true
 	var k = 3  # Scale factor
-	animated_sprite.play("explosion")
+	animated_sprite.play("explosion", 0.5)
 	animated_sprite.scale = Vector2(k, k)
 	rcs_left_sprite.visible = false
 	rcs_right_sprite.visible = false
@@ -319,9 +329,9 @@ func crash():
 
 # Function to check if the rocket is on the ground
 func is_on_ground() -> bool:
-	var raycast_left = $RayCast2DLeft
-	var raycast_right = $RayCast2DRight
-	return raycast_left.is_colliding() and raycast_right.is_colliding()
+	self.left_leg_contact = raycast_left.is_colliding()
+	self.right_leg_contact = raycast_right.is_colliding()
+	return self.left_leg_contact and self.right_leg_contact
 
 func _on_body_entered(body: Node) -> void:
 	if not destructible:
