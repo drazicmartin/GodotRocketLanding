@@ -18,6 +18,14 @@ const G: float = 6.674
 
 var shader_material: ShaderMaterial
 
+func get_state():
+	return {
+		'planet_radius': self.radius,
+		'planet_atmosphere_size': self.atmosphere_size,
+		'planet_mass': self.mass.toPlainScientific(),
+		'planet_position': self.position,
+	}
+
 func _ready():
 	self.mass = self.mass.timesEquals(Settings.MASS_SCALE)
 	print("Planet mass : ", mass.toScientific())

@@ -268,13 +268,16 @@ func _physics_process(delta):
 func get_state():
 	return { 
 		'position': self.position,
-		'velocity': self.linear_velocity,
+		'linear_velocity': self.linear_velocity,
+		'angular_velocity': self.angular_velocity,
 		'rotation': self.rotation,
 		'num_frame_computed': self.num_frame_computed,
 		'rocket_integrity': self.integrity,
-		'wind': self.wind_system.get_state(),
 		'propellant': self.propellant,
 		'temperature': self.temperature,
+		'mass': self.mass,
+		'left_leg_contact': self.left_leg_contact,
+		'right_leg_contact': self.right_leg_contact,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:

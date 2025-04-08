@@ -7,6 +7,10 @@ var run_once: bool = false
 @onready
 var Rocket = $Rocket
 @onready
+var Planet: StaticBody2D = %Planet
+@onready 
+var Wind: Node2D = %WindSystem
+@onready
 var Action = $Actions
 
 func _ready():
@@ -33,10 +37,17 @@ func _on_request_state(peer_id):
 
 func send_state(peer_id):
 	# Responding with a JSON message
-	var response = Rocket.get_state()
+	var response = get_state()
 	var json_response = JSON.stringify(response)
 	if peer_id != null:
 		WebSocketServer.send(peer_id, json_response)
+
+func get_state():
+	var state : Dictionary = {}
+	state.merge(Rocket.get_state())
+	state.merge(Wind.get_state())
+	state.merge(Planet.get_state())
+	return state
 
 func allow_one_physics_step() -> void:
 	# This method can be called externally or in response to some event
