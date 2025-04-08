@@ -43,7 +43,7 @@ const DEFAULT_INPUTS = {
 	"rcs_right_thrust": 0.0
 }
 const NO_DAMAGE_VELOCITY_THRESHOLD = 7
-const CRASH_VELOCITY_TRHESHOLD = 30
+const CRASH_VELOCITY_THRESHOLD = 30
 @onready
 var main_thurster_particules = $ParticulesMT
 @onready
@@ -348,8 +348,8 @@ func _on_body_entered(body: Node) -> void:
 	var hit_velocity = self.last_know_velocity
 	if hit_velocity < NO_DAMAGE_VELOCITY_THRESHOLD:
 		damage = 0.0
-	elif hit_velocity > CRASH_VELOCITY_TRHESHOLD:
+	elif hit_velocity > CRASH_VELOCITY_THRESHOLD:
 		damage = self.integrity
 	else:
-		damage = (hit_velocity - NO_DAMAGE_VELOCITY_THRESHOLD) / CRASH_VELOCITY_TRHESHOLD
+		damage = (hit_velocity - NO_DAMAGE_VELOCITY_THRESHOLD) / CRASH_VELOCITY_THRESHOLD
 	self.integrity -= damage
