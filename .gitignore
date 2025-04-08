@@ -12,3 +12,5 @@ export_presets.cfg
 data_*/
 __pycache__/
 .vscode/settings.json
+.vscode/sftp.json
+runs/
