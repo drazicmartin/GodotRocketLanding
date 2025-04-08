@@ -13,8 +13,8 @@ import ast
 class GRL:
     def __init__(
             self, 
-            port: int = 65253,
-            debug: bool = True,
+            port: int = 65000,
+            debug: bool = False,
         ):
         self.port = port
         self.uri = f"ws://127.0.0.1:{int(port)}"
@@ -95,8 +95,6 @@ class GRL:
             flags = subprocess.DETACHED_PROCESS
 
         subprocess.Popen(cmd, creationflags=flags)
-
-        breakpoint()
 
     @abstractmethod
     def process(self, state: dict):
