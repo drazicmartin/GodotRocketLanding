@@ -13,6 +13,7 @@ In 2147, Earth’s orbital elevators collapsed during a solar storm, severing al
 ```bash
 # in your virtual env
 pip install websockets
+pip install gymnasium
 
 python python/simple_landing.py
 # Or 
@@ -32,13 +33,18 @@ You can control only 3 Thrusters
 ### Rocket State
 ```python
 {
-    'position': tuple(x,y),
-    'velocity': tuple(x,y),
-    'rotation': float(-pi - pi),
-    'num_frame_computed': int,
-    'rocket_integrity': float(0-1),
-    'propellant': int,
-    'wind': tuple(x,y),
+    'position': tuple(x,y),          # Rocket position
+    'linear_velocity': tuple(x,y),   # Rocket linear velocity in pixels per second
+    'angular_velocity': float,       # La vitesse de rotation de Rocket en radians par seconde.
+    'rotation': float(-pi - pi),     # Rocket's rotation in radians
+    'num_frame_computed': int,       # Number of frame since start
+    'rocket_integrity': float(0-1),  # Integrity of the rocket, at 0.05, BOOOOOM...
+    'propellant': int,               # Proppellant left
+    'wind': tuple(x,y),              # Wind information
+    'temperature': float,            # Rocket's temperature, at somepoint it will melt
+    'mass': float,                   # The total mass of the rocket, change according to propellant left.
+    'left_leg_contact': bool,        # Rocket left  leg on ground ?
+    'right_leg_contact': bool,       # Rocket right leg on ground ?
 }
 ```
 
@@ -67,12 +73,16 @@ You can control only 3 Thrusters
             - v: Rocket velocity relative to the air
             - A: Cross-sectional area of the rocket
         - $ρ=ρ_0 * ​exp(−\frac{h}{H​})$
-- [ ] Levels
+- [ ] Add an emergency ejection with parachute
+- [X] Levels
     - Level 1
     - Level 2
     - Level 3
     - Level 4
-    - Need more
+    - Random
+      - [X] easy
+      - [X] moderate
+      - [X] hard
 
 ## Thanks
 - [The1Muneeb](https://deep-fold.itch.io/space-background-generator), for space background generator.
