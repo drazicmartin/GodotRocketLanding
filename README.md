@@ -3,6 +3,10 @@ A simple programmable rocket landing environment
 
 ![](assets/thumbnail.png)
 
+## Lore
+
+In 2147, Earth’s orbital elevators collapsed during a solar storm, severing all high-bandwidth connections to Mars. With a fleet of 1,000 automated rockets en route, each carrying critical resources, manual control from Earth became impossible. Only a narrow data channel remains, just enough to send one final program. You must design a landing algorithm capable of autonomously guiding every rocket through Mars atmosphere, without a single mistake. **Failure isn’t an option. One mistake, and years of progress would crash and burn.**
+
 ## Usage
 
 ### Python usage
