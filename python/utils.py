@@ -1,5 +1,6 @@
 import asyncio
 import json
+import platform
 import subprocess
 from abc import ABC, abstractmethod
 
@@ -7,18 +8,19 @@ import gymnasium as gym
 import numpy as np
 import websockets
 from gymnasium import spaces
-
+import ast
 
 class GRL:
     def __init__(
             self, 
-            port: int = 65000, 
-            exe_path: str = "GRL.exe"
+            port: int = 65253,
+            debug: bool = True,
         ):
         self.port = port
         self.uri = f"ws://127.0.0.1:{int(port)}"
         self.websocket = None  # Initialize websocket as None
-        self.exe_path = exe_path
+        self.exe_path = "GRL.exe" if platform.system() == "Windows" else "./GRL.x86_64"
+        self.debug = debug
 
     async def connect(self, max_retry=5):
         if self.websocket and self.websocket.open:
@@ -26,7 +28,8 @@ class GRL:
         else:
             print("Not connected. Attempting to connect...")
             try:
-                self.websocket = await websockets.connect(self.uri, timeout=60)
+                self.websocket = await websockets.connect(self.uri, open_timeout=60)
+                print("Connection Success : ready for lift off")
             except ConnectionRefusedError as e:
                 if max_retry > 0:
                     await self.connect(max_retry-1)
@@ -50,7 +53,11 @@ class GRL:
         response = await self.websocket.recv()
         # Deserialize the JSON string back into a Python object
         response_data = json.loads(response)
-        return response_data
+        if 'game_state' in response_data:
+            return response_data
+        else:
+            state = self.read_state(response_data)
+            return state
 
     async def quit_game(self):
         await self.send_data(self.get_quit_game_input())
@@ -58,26 +65,38 @@ class GRL:
     async def stop(self):
         await self.quit_game()
 
+    def read_state(self, state: dict):
+        return { key: ast.literal_eval(val) if isinstance(val, str) else val for key,val in state.items() }
+
     async def ignition(self, level_name:str = "level_1"):
         await self.connect()
         await self.change_level(level_name)
         await self.set_scripted()
         state = await self.get_state()
         while True:
-            if "game_state" in state:
-                print(state['game_state'])
-                break
-
-            inputs = self.process(state)
-            await self.send_data(inputs)
+            action = self.process(state)
+            await self.send_data(action)
 
             state = await self.receive_data()
 
+            if "game_state" in state:
+                print(f"Houston we have a problem : State={state['game_state']}")
+                break
+
     def start_game(self, show_window=False):
         cmd = [self.exe_path, "-p", str(self.port)]
-        if not show_window:
+        if not show_window or platform.system() == "Linux":
             cmd.append("--headless")
-        subprocess.Popen(cmd, creationflags=subprocess.DETACHED_PROCESS)
+        if self.debug:
+            cmd.append("--debug")
+        
+        flags = 0
+        if platform.system() == "Windows":
+            flags = subprocess.DETACHED_PROCESS
+
+        subprocess.Popen(cmd, creationflags=flags)
+
+        breakpoint()
 
     @abstractmethod
     def process(self, state: dict):
@@ -93,6 +112,13 @@ class GRL:
         input = self.get_change_level_input(level_name)
         await self.send_data(input)
         await self.receive_data()
+    
+    async def restart_level(self):
+        input = self.get_restart_level_input()
+        await self.send_data(input)
+        data = await self.receive_data()
+        while data.get('game_state', None) != "restart":
+            data = await self.receive_data()
 
     async def set_scripted(self):
         await self.send_data({
@@ -115,29 +141,132 @@ class GRL:
             'action':  'restart_level'
         }
 
+    def get_action_name(self):
+        return ["main_thrust", "rcs_left_thrust", "rcs_right_thrust"]
+
 class GRLGym(gym.Env):
     metadata = {"render_modes": ["human"]}
 
     def __init__(
-            self, 
-            action_space_mode="discrete" #  discrete or continious
+            self,
+            idx=0,
+            port=65000,
+            show_window = False,
+            level_name="random_level_easy",
         ):
         super().__init__()
         
         # Initialize the Godot environment
-        self.env = GRL()
-        
-        if action_space_mode == "discrete":
-            # Define action and observation spaces
-            self.action_space = spaces.Discrete(3)  # Example: 4 possible actions
-            self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)
-        else:
-            self.action_space = spaces.Box(low=0.0, high=1.0, shape=(3,), dtype=np.float32)
-            self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)
+        self.env = GRL(port=port+idx)
+        self.show_window = show_window if idx == 0 else False
 
-        # Start game
-        self.env.start_game(show_window=False)
-        asyncio.run(self.env.connect())
+        self.observation_space_dict = {
+            # Rocket position
+            'position': {
+                #        x   , y
+                'low':  [-700,-700],
+                'high': [700 , 200],
+            },
+            # Rocket linear velocity in pixels per second
+            'linear_velocity': {
+                #        x   , y
+                'low':  [-100,-100],
+                'high': [100 , 100],
+            },
+            # La vitesse de rotation de Rocket en radians par seconde.
+            'angular_velocity': {
+                'low':  [0],
+                'high': [100],
+            },
+            # Rocket's rotation in radians
+            'rotation': {
+                'low':  [-6.2831855],
+                'high': [ 6.2831855],
+            },
+            # Proppellant left in percent
+            'propellant': {
+                'low':  [0],
+                'high': [1]
+            },
+            'left_leg_contact': {
+                'low':  [0],
+                'high': [1]
+            },
+            'right_leg_contact': {
+                'low':  [0],
+                'high': [1]
+            }
+            # 'rocket_integrity': float(0-1),  # Integrity of the rocket, at 0.05, BOOOOOM...
+            # 'num_frame_computed': int,       # Number of frame since start
+            # 'wind': tuple(x,y),              # Wind information
+            # 'temperature': float,            # Rocket's temperature, at somepoint it will melt
+            # 'mass': float,                   # The total mass of the rocket, change according to propellant left.
+        }
+
+        self.observation_space_names = ['position', 'linear_velocity', 'angular_velocity', 'rotation', 'propellant', 'right_leg_contact', 'left_leg_contact']
+        
+        self.action_space = spaces.Discrete(4)  # Example: 4 possible actions, [main, left, right, nothing]
+        self.define_observation_space()
+
+        asyncio.get_event_loop().run_until_complete(self.async_start(level_name))
+
+    async def async_start(self, level_name):
+        # Start game level
+        self.env.start_game(show_window=self.show_window)
+        await self.env.connect()
+        await self.env.change_level(level_name)
+        await self.env.set_scripted()
+
+    @abstractmethod
+    def compute_reward(self, state: dict, obs: np.ndarray, victory: bool, crash: bool):
+        """
+        Computes the reward signal based on the current environment state and observation.
+
+        Args:
+            state (Any): The internal environment state, which may include variables 
+                        not exposed to the agent (e.g., simulation internals).
+            obs (Any): The observation received by the agent, typically a processed 
+                    or partial view of the state.
+
+        Returns:
+            float: The computed reward value that will be used by the learning algorithm.
+
+        Notes:
+            This method must be implemented by subclasses. It allows custom reward
+            shaping or task-specific reward design.
+        """
+
+    def reset(self, **kwargs):
+        return asyncio.get_event_loop().run_until_complete(self.async_reset(**kwargs))
+
+    def step(self, action):
+        return asyncio.get_event_loop().run_until_complete(self.async_step(action))
+
+    def close(self):
+        return asyncio.get_event_loop().run_until_complete(self.async_close())
+
+    def state_to_observation(self, state):
+        observation = []
+        for name in self.observation_space_names:
+            vue = state[name]
+            if isinstance(vue, tuple):
+                observation.extend(state[name])
+            else:
+                observation.append(state[name])
+        
+        ## TODO CHECK if the observation match the defined low and high
+        return np.array(observation, dtype=np.float32)
+
+    def define_observation_space(self):
+        low = []
+        high = []
+        for name in self.observation_space_names:
+            low.extend(self.observation_space_dict[name]['low'])
+            high.extend(self.observation_space_dict[name]['high'])
+
+        low = np.array(low, dtype=np.float32)
+        high = np.array(high, dtype=np.float32)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     @abstractmethod
     def get_reward(self, state):
@@ -154,30 +283,52 @@ class GRLGym(gym.Env):
         """
         pass
 
-    def step(self, action):
+    def decode_action(self, action):
+        if isinstance(action, np.int64) and self.action_space == spaces.Discrete(4):
+            return {action_name: float(i==action) for i, action_name in enumerate(self.env.get_action_name()) }
+        else:
+            raise NotImplementedError("implement your own action decoding, or send directly the dict action")
+
+    async def async_step(self, action):
         # Send action to the Godot server
-        asyncio.run(self.env.send_data(action))
+        if not isinstance(action, dict):
+            action = self.decode_action(action)
+        
+        await self.env.send_data(action)
+        data = await self.env.receive_data()
 
-        # Receive state
-        state = asyncio.run(self.env.receive_data())
+        truncation = False
+        done = False
+        obs = None
+        if 'game_state' in data:
+            match data['game_state']:
+                case 'victory':
+                    done = True
+                case 'crash':
+                    truncation = True
+                # If an exact match is not confirmed, this last case will be used if provided
+                case _:
+                    raise NotImplementedError()
+            
+            state = await self.env.receive_data()
+        else:
+            state = data
 
-        # Extract data from state
-        obs = np.array(state["observation"])
-        reward = state.get("reward", 0)
-        done = state.get("done", False)
+        obs = self.state_to_observation(state)
+        reward = self.compute_reward(data, obs, done, truncation)
+        return obs, reward, done, truncation, state
 
-        return obs, reward, done, False, {}
-
-    def reset(self, seed=None, options=None):
-        # Reset game level
-        asyncio.run(self.env.change_level("random_level"))
+    async def async_reset(self, seed=None, options=None):
+        await self.env.restart_level()
 
         # Get initial state
-        state = asyncio.run(self.env.get_state())
-        return np.array(state["observation"]), {}
+        state = await self.env.get_state()
+
+        obs = self.state_to_observation(state)
+        return obs, {}
 
     def render(self, mode="human"):
         pass  # Rendering handled in Godot
 
-    def close(self):
-        asyncio.run(self.env.quit_game())
+    async def async_close(self):
+        await self.env.quit_game()

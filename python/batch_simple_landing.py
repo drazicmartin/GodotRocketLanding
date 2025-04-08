@@ -7,7 +7,7 @@ async def main():
     tasks = []
     for k in range(4):
         rocket = SimpleLanding(port=starting_port+k)
-        tasks.append(run_simple_landing(rocket, level_name=f'random_level', show_window=False))
+        tasks.append(run_simple_landing(rocket, level_name='random_level_easy', show_window=False))
     
     # Run all tasks concurrently
     await asyncio.gather(*tasks)

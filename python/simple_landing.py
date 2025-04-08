@@ -1,6 +1,5 @@
 import asyncio
 from utils import GRL
-import ast
 
 class SimpleLanding(GRL):
     def process(self, state: dict):
@@ -10,8 +9,8 @@ class SimpleLanding(GRL):
         :param state: A dictionary representing the current state of the rocket.
         :return: A new dictionary that specifies the input for the rocket.
         """
-        position = ast.literal_eval(state['position'])
-        velocity = ast.literal_eval(state['velocity'])
+        position = state['position']
+        velocity = state['linear_velocity']
 
         rcs_left_thrust = 0
         rcs_right_thrust = 0
@@ -21,21 +20,21 @@ class SimpleLanding(GRL):
         else:
             rcs_left_thrust = 0.5
 
-        t = 0.4
+        t = 0.1
         if position[1] > -200:
-            t = 0.8
+            t = 0.5
         if position[1] > -10:
             t = 0
 
-        inputs = {
-            "main_thrust": t,
-            "rcs_left_thrust": rcs_left_thrust,
-            "rcs_right_thrust": rcs_right_thrust,
+        action = {
+            "main_thrust": 0,
+            "rcs_left_thrust": 0,
+            "rcs_right_thrust": 0,
         }
 
-        return inputs
+        return action
 
-async def main(rocket: GRL, level_name='random_level', show_window=False):
+async def main(rocket: GRL, level_name='random_level_easy', show_window=False):
     rocket.start_game(show_window=show_window)
     await rocket.ignition(level_name=level_name)
     await rocket.stop()
@@ -43,7 +42,7 @@ async def main(rocket: GRL, level_name='random_level', show_window=False):
 
 if __name__ == "__main__":
     rocket = SimpleLanding(
-        port=65000
+        port=3012
     )
     asyncio.run(
         main(rocket, show_window=True),
