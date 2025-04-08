@@ -301,7 +301,7 @@ func set_inputs(inputs: Dictionary):
 
 func crash():
 	emit_signal("simulation_finished", {"game_state": "crash"})
-	# print("Rocket Crashed")
+	if Settings.debug: print("Rocket Crashed")
 	self.sleeping = true
 	var k = 3  # Scale factor
 	animated_sprite.play("explosion")

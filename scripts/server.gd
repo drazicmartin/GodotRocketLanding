@@ -17,7 +17,7 @@ signal client_disconnected(peer_id: int)
 			pending_peers.clear()
 
 func _ready():
-	print("Server is ready and will persist across scenes.")
+	if Settings.debug: print("Server is ready and will persist across scenes.")
 	# Let the server alwais run even when game is paused
 	self.process_mode = Node.PROCESS_MODE_ALWAYS
 

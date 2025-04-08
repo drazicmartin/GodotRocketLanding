@@ -12,6 +12,7 @@ func _ready():
 
 func handle_action(data):
 	var action = data['action']
+	if Settings.debug: print("received action : " + action)
 	if action == "restart_level":
 		self.restart_level()
 	elif action == "get_state":
@@ -43,7 +44,7 @@ func change_level(scene_name, force: bool = false, send_signal: bool = true):
 		return
 	get_tree().paused = false
 	if send_signal:
-	self._on_game_state_change("new_level")
+		self._on_game_state_change("new_level")
 	get_tree().change_scene_to_file("res://scenes/"+scene_name+".tscn")
 
 func quit():

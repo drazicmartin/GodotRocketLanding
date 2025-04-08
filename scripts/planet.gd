@@ -28,7 +28,7 @@ func get_state():
 
 func _ready():
 	self.mass = self.mass.timesEquals(Settings.MASS_SCALE)
-	print("Planet mass : ", mass.toScientific())
+	if Settings.debug: print("Planet mass : ", mass.toScientific())
 	# Make sure gravity is controlled by planet not godot default 
 	PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY, 0)
 	

@@ -6,7 +6,7 @@ var run_once: bool = false
 
 @onready
 var Rocket = $Rocket
-@onready
+@onready 
 var Planet: StaticBody2D = %Planet
 @onready 
 var Wind: Node2D = %WindSystem
@@ -24,6 +24,10 @@ func _ready():
 	if Settings.control_mode == "script":
 		# Initially, pause the game
 		get_tree().paused = true
+	
+	if "--debug" in OS.get_cmdline_args():
+		print("Running in debug mode!")
+		Settings.debug = true
 
 func _physics_process(delta: float) -> void:
 	if Settings.control_mode == "script":
@@ -40,6 +44,7 @@ func send_state(peer_id):
 	var response = get_state()
 	var json_response = JSON.stringify(response)
 	if peer_id != null:
+		if Settings.debug : print("sending state")
 		WebSocketServer.send(peer_id, json_response)
 
 func get_state():
@@ -71,9 +76,9 @@ func _on_message_received(peer_id: int, message: String):
 		print("JSON Parse Error: ", json.get_error_message(), " in ", message, " at line ", json.get_error_line())
 
 func _on_client_connected(peer_id: int):
-	print("Client connected")
+	if Settings.debug: print("Client connected")
 	self.peer_id = peer_id
 
 func _on_client_disconnected(peer_id: int):
-	print("Client Disconnected")
+	if Settings.debug: print("Client Disconnected")
 	self.peer_id = null

@@ -14,8 +14,9 @@ func _ready():
 	WebSocketServer.connect("client_disconnected", Callable(self, "_on_client_disconnected"))
 	
 	var args = OS.get_cmdline_args()
-	for arg in args:
-		print("Argument passed: ", arg)
+	if Settings.debug:
+		for arg in args:
+			print("Argument passed: ", arg)
 	# Example of using arguments
 	if "-p" in args:
 		var value_index = args.find("-p") + 1
