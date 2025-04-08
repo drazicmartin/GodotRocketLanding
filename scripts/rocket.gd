@@ -56,8 +56,12 @@ var obj_center_of_mass = $"center of mass"
 var animated_sprite = $AnimatedSprite2D
 @onready var rcs_left_sprite = $rcs_left
 @onready var rcs_right_sprite = $rcs_right
-@onready
-var integrity_text = $integrity_text
+
+# Rocket UI 
+@onready var integrity_text = $VBoxContainer/integrity_text
+@onready var linear_velocity_text: RichTextLabel = $VBoxContainer/linear_velocity_text
+@onready var angular_velocity_text: RichTextLabel = $VBoxContainer/angular_velocity_text
+
 @onready var planet: StaticBody2D = %Planet
 
 @onready
@@ -261,8 +265,8 @@ func _physics_process(delta):
 		queue_redraw()
 	self.last_know_velocity = self.linear_velocity.length()
 	was_on_ground = is_on_ground()
-	integrity_text.text = "[center]%s[/center]" % int(self.integrity*100)
 	self.integrity = max(0,self.integrity)
+	self.ui_update()
 	if self.integrity <= 0.0:
 		crash()
 	
@@ -276,6 +280,11 @@ func _physics_process(delta):
 		if self.invinsible_step <= 0:
 			self.destructible = true
 			self.invinsible_start = false
+
+func ui_update():
+	self.integrity_text.text = "[center][font_size=8]Integrity[/font_size]\n %s[/center]" % int(self.integrity*100)
+	self.linear_velocity_text.text = "[center][font_size=8]Linear Velocity[/font_size]\n %s[/center]" % int(self.linear_velocity.length())
+	self.angular_velocity_text.text = "[center][font_size=8]Angular Velocity (x100)[/font_size]\n %s[/center]" % int(self.angular_velocity*100)
 
 func get_state():
 	return {
@@ -321,7 +330,6 @@ func crash():
 	animated_sprite.scale = Vector2(k, k)
 	rcs_left_sprite.visible = false
 	rcs_right_sprite.visible = false
-	integrity_text.visible = false
 	main_thurster_particules.visible = false
 	left_thurster_particules.visible = false
 	right_thurster_particules.visible = false
