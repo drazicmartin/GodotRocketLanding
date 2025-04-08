@@ -645,3 +645,4 @@ text = "[center]100[/center]"
 metadata/_edit_use_anchors_ = true
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]
+[connection signal="simulation_finished" from="Rocket" to="Actions" method="_on_rocket_simulation_finished"]
