@@ -38,7 +38,7 @@ def parse_args():
         help="weather to capture videos of the agent performances (check out `videos` folder)")
 
     # Algorithm specific arguments
-    parser.add_argument("--env-id", type=str, default="GRLGym",
+    parser.add_argument("--env-id", type=str, default="GRL",
         help="the id of the environment")
     parser.add_argument("--total-timesteps", type=int, default=50000,
         help="total timesteps of the experiments")
@@ -74,9 +74,6 @@ def parse_args():
         help="the maximum norm for the gradient clipping")
     parser.add_argument("--target-kl", type=float, default=None,
         help="the target KL divergence threshold")
-
-    # Adding HuggingFace argument
-    parser.add_argument("--repo-id", type=str, default="ThomasSimonini/ppo-CartPole-v1", help="id of the model repository from the Hugging Face Hub {username/repo_name}")
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)
@@ -162,10 +159,10 @@ class CustomGRLGym(GRLGym):
             return reward
 
 
-def make_env(env_id, idx=0, show_window=False):
+def make_env(env_id="GRL", idx=0, show_window=False, level_name="random_level_easy"):
     def thunk():
-        if env_id == "GRLGym":
-            env = CustomGRLGym(idx=idx, port=65000, level_name="level_1", show_window=show_window)
+        if env_id == "GRL":
+            env = CustomGRLGym(idx=idx, port=65000, level_name=level_name, show_window=show_window)
         else:
             env = gym.make(env_id)
             # env = gym.wrappers.RecordEpisodeStatistics(env)
@@ -236,13 +233,6 @@ def main_ppo(args):
             next_obs, reward, done, trunc, info = envs.step(action.cpu().numpy())
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
-
-            # for item in info:
-            #     if "episode" in item.keys():
-            #         print(f"global_step={global_step}, episodic_return={item['episode']['r']}")
-            #         writer.add_scalar("charts/episodic_return", item["episode"]["r"], global_step)
-            #         writer.add_scalar("charts/episodic_length", item["episode"]["l"], global_step)
-            #         break
 
         # bootstrap value if not done
         with torch.no_grad():
@@ -350,7 +340,6 @@ def main_ppo(args):
         writer.add_scalar("losses/approx_kl", approx_kl.item(), global_step)
         writer.add_scalar("losses/clipfrac", np.mean(clipfracs), global_step)
         writer.add_scalar("losses/explained_variance", explained_var, global_step)
-        print("SPS:", int(global_step / (time.time() - start_time)))
         writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
     envs.close()
