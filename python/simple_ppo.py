@@ -12,6 +12,8 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from utils import GRLGym
 from math import exp
+from tqdm import tqdm
+from pathlib import Path
 
 def parse_args():
     # fmt: off
@@ -211,7 +213,7 @@ def main_ppo(args):
     next_done = torch.zeros(args.num_envs).to(device)
     num_updates = args.total_timesteps // args.batch_size
 
-    for update in range(1, num_updates + 1):
+    for update in tqdm(range(1, num_updates + 1)):
         # Annealing the rate if instructed to do so.
         if args.anneal_lr:
             frac = 1.0 - (update - 1.0) / num_updates
