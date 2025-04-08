@@ -115,6 +115,12 @@ class Agent(nn.Module):
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
 
+    def save(self, path):
+        torch.save(self.state_dict(), path)
+    
+    def load(self, path):
+        self.load_state_dict(torch.load(path, weights_only=True))
+
 class CustomGRLGym(GRLGym):
     def compute_reward(self, state: dict, obs: np.ndarray, victory: bool, crash: bool):
         """
@@ -174,7 +180,8 @@ def make_env(env_id, idx=0, show_window=False):
 def main_ppo(args):
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
     run_name = f"{args.env_id}__{args.exp_name}__{int(time.time())}"
-    writer = SummaryWriter(f"runs/{run_name}")
+    output_dir = f"runs/{run_name}"
+    writer = SummaryWriter(output_dir)
     writer.add_text(
         "hyperparameters",
         "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
@@ -347,9 +354,8 @@ def main_ppo(args):
     envs.close()
     writer.close()
 
-    # Create the evaluation environment
-    eval_env = make_env(args.env_id)
-    
+    agent.save(Path(output_dir, "checkpoint.pth"))
+
 
 
 if __name__ == "__main__":
