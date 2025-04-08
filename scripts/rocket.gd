@@ -5,6 +5,8 @@ var debug: bool = false
 @export
 var randomize_init : bool = false
 @export
+var randomize_init_factor : float = 1.0
+@export
 var initial_direction : Vector2 = Vector2(0,0)
 @export
 var initial_velocity : float = 0
@@ -100,10 +102,11 @@ func _ready() -> void:
 	Engine.time_scale = 1
 	if randomize_init:
 		# Randomize initial values
+		var random_factor = randomize_init_factor
 		initial_direction = Vector2(randf_range(-0.5, 0.5), randf_range(0, 1)).normalized() # Random velocity between -100 and 100 for both x and y
-		initial_velocity = randf_range(-200,200)
-		self.position = Vector2(randf_range(-100, 100), randf_range(-400, -100))  # Random position in the defined range
-		self.rotation = randf_range(deg_to_rad(-10), deg_to_rad(10))  # Random rotation between 0 and 360 degrees (in radians)
+		initial_velocity = randf_range(-200*random_factor,200*random_factor)
+		self.position = Vector2(randf_range(-100*random_factor, 100*random_factor), randf_range(-150*random_factor, -100))  # Random position in the defined range
+		self.rotation = randf_range(deg_to_rad(-5*random_factor), deg_to_rad(5*random_factor))  # Random rotation between 0 and 360 degrees (in radians)
 		self.invinsible_start = true
 	
 	if self.invinsible_start:
