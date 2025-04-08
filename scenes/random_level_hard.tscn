@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c56ixnhloyqfc"]
+
+[ext_resource type="PackedScene" uid="uid://b6xvofyoblwm4" path="res://scenes/main.tscn" id="1_n7m42"]
+
+[node name="MainScene" instance=ExtResource("1_n7m42")]
+
+[node name="Rocket" parent="." index="4"]
+randomize_init = true
+randomize_init_factor = 4.0
