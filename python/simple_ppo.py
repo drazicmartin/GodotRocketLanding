@@ -347,6 +347,10 @@ def main_ppo(args):
 
     agent.save(Path(output_dir, "checkpoint.pth"))
 
+    from enjoy_ppo import enjoy
+    enjoy(agent, device)
+
+    print("Done !")
 
 
 if __name__ == "__main__":
