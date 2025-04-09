@@ -15,6 +15,9 @@ from math import exp
 from tqdm import tqdm
 from pathlib import Path
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.wrappers.rendering")
+
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
