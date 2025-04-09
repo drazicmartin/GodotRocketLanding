@@ -14,4 +14,5 @@ __pycache__/
 .vscode/settings.json
 .vscode/sftp.json
 runs/
-GRL.*.TMP
+GRL.*.TMPs
+debug/
