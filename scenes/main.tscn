@@ -637,6 +637,7 @@ offset_bottom = 152.0
 grow_vertical = 2
 
 [node name="angular_velocity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
+modulate = Color(1, 0.203922, 1, 1)
 z_index = 1
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -646,6 +647,7 @@ text = "[center]100[/center]"
 metadata/_edit_use_anchors_ = true
 
 [node name="linear_velocity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
+modulate = Color(1, 0.203922, 1, 1)
 z_index = 1
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -655,6 +657,7 @@ text = "[center]100[/center]"
 metadata/_edit_use_anchors_ = true
 
 [node name="integrity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
+modulate = Color(1, 0.203922, 1, 1)
 z_index = 1
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
