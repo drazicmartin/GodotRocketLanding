@@ -194,6 +194,7 @@ class GRLGym(gym.Env):
     def reset(self, **kwargs):
         if not self.async_env_started:
             asyncio.get_event_loop().run_until_complete(self.async_start())
+            self.async_env_started = True
         return asyncio.get_event_loop().run_until_complete(self.async_reset(**kwargs))
 
     def step(self, action):
