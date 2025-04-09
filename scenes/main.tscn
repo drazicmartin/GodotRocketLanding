@@ -669,7 +669,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="Rocket"]
 position = Vector2(0, -40)
-scale = Vector2(0.01, 0.01)
+scale = Vector2(0.016, 0.016)
 texture = ExtResource("13_cwls3")
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]
