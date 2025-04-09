@@ -158,55 +158,12 @@ class GRLGym(gym.Env):
         self.env = GRL(port=port+idx)
         self.show_window = show_window if idx == 0 else False
 
-        self.observation_space_dict = {
-            # Rocket position
-            'position': {
-                #        x   , y
-                'low':  [-700,-700],
-                'high': [700 , 200],
-            },
-            # Rocket linear velocity in pixels per second
-            'linear_velocity': {
-                #        x   , y
-                'low':  [-100,-100],
-                'high': [100 , 100],
-            },
-            # La vitesse de rotation de Rocket en radians par seconde.
-            'angular_velocity': {
-                'low':  [0],
-                'high': [100],
-            },
-            # Rocket's rotation in radians
-            'rotation': {
-                'low':  [-6.2831855],
-                'high': [ 6.2831855],
-            },
-            # Proppellant left in percent
-            'propellant': {
-                'low':  [0],
-                'high': [1]
-            },
-            'left_leg_contact': {
-                'low':  [0],
-                'high': [1]
-            },
-            'right_leg_contact': {
-                'low':  [0],
-                'high': [1]
-            }
-            # 'rocket_integrity': float(0-1),  # Integrity of the rocket, at 0.05, BOOOOOM...
-            # 'num_frame_computed': int,       # Number of frame since start
-            # 'wind': tuple(x,y),              # Wind information
-            # 'temperature': float,            # Rocket's temperature, at somepoint it will melt
-            # 'mass': float,                   # The total mass of the rocket, change according to propellant left.
-        }
-
-        self.observation_space_names = ['position', 'linear_velocity', 'angular_velocity', 'rotation', 'propellant', 'right_leg_contact', 'left_leg_contact']
-        
-        self.action_space = spaces.Discrete(4)  # Example: 4 possible actions, [main, left, right, nothing]
-        self.define_observation_space()
+        self.setup_observation_space()
 
         asyncio.get_event_loop().run_until_complete(self.async_start(level_name))
+
+    def setup_observation_space(self):
+        self.define_observation_space()
 
     async def async_start(self, level_name):
         # Start game level
@@ -299,22 +256,18 @@ class GRLGym(gym.Env):
         done = False
         obs = None
         if 'game_state' in data:
-            match data['game_state']:
-                case 'victory':
-                    done = True
-                case 'crash':
-                    truncation = True
-                # If an exact match is not confirmed, this last case will be used if provided
-                case _:
-                    raise NotImplementedError()
-            
+            done = True
             state = await self.env.receive_data()
         else:
             state = data
 
         obs = self.state_to_observation(state)
         reward = self.compute_reward(data, obs, done, truncation)
+        done, truncation = self.early_stop(obs, reward, done, truncation, state)
         return obs, reward, done, truncation, state
+
+    def early_stop(self, obs, reward, done, truncation, state):
+        return done, truncation
 
     async def async_reset(self, seed=None, options=None):
         await self.env.restart_level()

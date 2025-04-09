@@ -121,7 +121,70 @@ class Agent(nn.Module):
         self.load_state_dict(torch.load(path, weights_only=True))
 
 class CustomGRLGym(GRLGym):
-    def compute_reward(self, state: dict, obs: np.ndarray, victory: bool, crash: bool):
+    def setup_observation_space(self):
+        from gymnasium import spaces
+
+        self.observation_space_dict = {
+            # Rocket position
+            'position': {
+                #        x   , y
+                'low':  [-700,-700],
+                'high': [700 , 200],
+            },
+            # Rocket linear velocity in pixels per second
+            'linear_velocity': {
+                #        x   , y
+                'low':  [-100,-100],
+                'high': [100 , 100],
+            },
+            # La vitesse de rotation de Rocket en radians par seconde.
+            'angular_velocity': {
+                'low':  [0],
+                'high': [100],
+            },
+            # Rocket's rotation in radians
+            'rotation': {
+                'low':  [-6.2831855],
+                'high': [ 6.2831855],
+            },
+            # Proppellant left in percent
+            'propellant': {
+                'low':  [0],
+                'high': [1]
+            },
+            'left_leg_contact': {
+                'low':  [0],
+                'high': [1]
+            },
+            'right_leg_contact': {
+                'low':  [0],
+                'high': [1]
+            }
+        }
+
+        self.observation_space_names = ['position', 'linear_velocity', 'angular_velocity', 'rotation', 'propellant', 'right_leg_contact', 'left_leg_contact']
+        
+        self.action_space = spaces.Discrete(2)  # Example: 4 possible actions, [nothing, main]
+        return super().setup_observation_space()
+
+    def decode_action(self, action):
+        from gymnasium import spaces
+        if isinstance(action, np.int64) and self.action_space == spaces.Discrete(2):
+            return {
+                "main_thrust": int(action),
+                "rcs_left_thrust": 0, 
+                "rcs_right_thrust": 0
+            }
+        else:
+            raise NotImplementedError("implement your own action decoding, or send directly the dict action")
+
+    def early_stop(self, obs, reward, done, truncation, state):
+        if state['num_frame_computed'] > 200:
+            return done, True
+        else:
+            return done, truncation
+
+    def compute_reward(self, state: dict, obs: np.ndarray, done: bool, trunc: bool):
         """
         Computes the reward signal based on the current environment state and observation.
 
@@ -140,14 +203,19 @@ class CustomGRLGym(GRLGym):
         """
         reward = 0
 
-        if victory:
-            return 1000
-        elif crash:
-            return 0
+        if 'game_state' in state:
+            match state['game_state']:
+                case 'victory':
+                    return 5000
+                case 'crash':
+                    return 0
+                case _ :
+                    raise NotImplementedError()
         else:
-            pos_reward = exp(-np.linalg.norm(state['position'])*0.01 + 1)
-            speed_reward = exp(-np.linalg.norm(state['linear_velocity'])*0.01 + 1)
-            reward += pos_reward * speed_reward
+            pos_reward = 200/(np.linalg.norm(state['position'])*0.1 + 1)
+            x = np.linalg.norm(state['linear_velocity'])
+            speed_reward = exp(-((x-30)*0.01)) if x >= 30 else 1
+            reward += pos_reward
 
             if state['right_leg_contact']:
                 reward += 500
@@ -155,7 +223,9 @@ class CustomGRLGym(GRLGym):
                 reward += 500
             if state['left_leg_contact'] and state['right_leg_contact']:
                 reward *= 2
+            reward *= speed_reward
             reward *= state['rocket_integrity']
+            reward *= 0.99 ** state['num_frame_computed']
             return reward
 
 
