@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=79 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cm32e3spkcl7c" path="res://assets/rocket/explosions/explosion 3.png" id="7_haxk0"]
 [ext_resource type="Script" path="res://scripts/actions.gd" id="9_1xfh8"]
 [ext_resource type="Script" path="res://scripts/wind.gd" id="12_nldry"]
+[ext_resource type="Texture2D" uid="uid://cfarcdwq0ai5y" path="res://assets/logo_alpha.png" id="13_cwls3"]
 [ext_resource type="Script" path="res://scripts/planet.gd" id="13_itfad"]
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_a8c1y"]
@@ -665,6 +666,11 @@ theme_override_font_sizes/normal_font_size = 50
 bbcode_enabled = true
 text = "[center]100[/center]"
 metadata/_edit_use_anchors_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="Rocket"]
+position = Vector2(0, -40)
+scale = Vector2(0.01, 0.01)
+texture = ExtResource("13_cwls3")
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]
 [connection signal="simulation_finished" from="Rocket" to="Actions" method="_on_rocket_simulation_finished"]
