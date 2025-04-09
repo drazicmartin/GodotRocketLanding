@@ -18,6 +18,22 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.wrappers.rendering")
 
+def low_capped_cubic_video_schedule(episode_id: int) -> bool:
+    r"""The default episode trigger.
+
+    This function will trigger recordings at the episode indices :math:`\{0, 1, 4, 8, 27, ..., k^3, ..., 729, 1000, 2000, 3000, ...\}`
+
+    Args:
+        episode_id: The episode number
+
+    Returns:
+        If to apply a video schedule number
+    """
+    if episode_id < 100:
+        return int(round(episode_id ** (1.0 / 3))) ** 3 == episode_id
+    else:
+        return episode_id % 100 == 0
+
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
@@ -35,13 +51,13 @@ def parse_args():
         help="weather to capture videos of the agent performances (check out `videos` folder)")
 
     # Algorithm specific arguments
-    parser.add_argument("--env-id", type=str, default="GRL",
+    parser.add_argument("--env-id", type=str, default="GRL", # LunarLander-v3
         help="the id of the environment")
-    parser.add_argument("--total-timesteps", type=int, default=50000,
+    parser.add_argument("--total-timesteps", type=int, default=100000,
         help="total timesteps of the experiments")
     parser.add_argument("--learning-rate", type=float, default=2.5e-4,
         help="the learning rate of the optimizer")
-    parser.add_argument("--num-envs", type=int, default=2,
+    parser.add_argument("--num-envs", type=int, default=4,
         help="the number of parallel game environments")
     parser.add_argument("--num-steps", type=int, default=128,
         help="the number of steps to run in each environment per policy rollout")
@@ -225,22 +241,22 @@ class CustomGRLGym(GRLGym):
             reward *= 0.99 ** state['num_frame_computed']
             return reward
 
-
-def make_env(env_id="GRL", idx=0, show_window=False, level_name="random_level_easy"):
+def make_env(env_id="GRL", idx=0, show_window=False, level_name="level_1", seed=0, capture_video=False, output_dir="runs/debug"):
     def thunk():
         if env_id == "GRL":
             env = CustomGRLGym(idx=idx, port=65000, level_name=level_name, show_window=show_window)
         else:
             env = gym.make(env_id)
-            # env = gym.wrappers.RecordEpisodeStatistics(env)
-            # if capture_video:
-            #     if idx == 0:
-            #         env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
-            # env.seed(seed)
-            # env.action_space.seed(seed)
-            # env.observation_space.seed(seed)
+            if idx == 0:
+                if capture_video:
+                    env = gym.make(env_id,  render_mode="rgb_array")
+                    env = gym.wrappers.RecordVideo(env, f"{output_dir}/video", episode_trigger=low_capped_cubic_video_schedule)
+            
+            env = gym.wrappers.RecordEpisodeStatistics(env)
+            env.reset(seed=seed)
+            env.action_space.seed(seed)
+            env.observation_space.seed(seed)
         return env
-
     return thunk
 
 def main_ppo(args):
@@ -254,7 +270,7 @@ def main_ppo(args):
     )
 
     envs = gym.vector.AsyncVectorEnv(
-        [make_env(args.env_id, i, args.show_window) for i in range(args.num_envs)]
+        [make_env(env_id=args.env_id, idx=i, show_window=args.show_window, seed=args.seed + i, capture_video=args.capture_video, output_dir=output_dir) for i in range(args.num_envs)]
     )
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
 
@@ -299,7 +315,15 @@ def main_ppo(args):
             # TRY NOT TO MODIFY: execute the game and log data.
             next_obs, reward, done, trunc, info = envs.step(action.cpu().numpy())
             rewards[step] = torch.tensor(reward).to(device).view(-1)
-            next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
+            next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done | trunc).to(device)
+            
+            if "episode" == info.keys():
+                n = reward.shape[0]
+                for i in range(n):
+                    print(f"global_step={global_step}, episodic_return={info['episode']['r'][i]}")
+                    writer.add_scalar("charts/episodic_return", info['episode']["r"][i], global_step)
+                    writer.add_scalar("charts/episodic_length", info['episode']["l"][i], global_step)
+                    break
 
         # bootstrap value if not done
         with torch.no_grad():
@@ -414,8 +438,11 @@ def main_ppo(args):
 
     agent.save(Path(output_dir, "checkpoint.pth"))
 
+    eval_env = make_env(env_id=args.env_id, idx=0, show_window=args.show_window, seed=args.seed, capture_video=args.capture_video, output_dir=f"{output_dir}/eval")()
+
     from enjoy_ppo import enjoy
-    enjoy(agent, device)
+    enjoy(args, agent, device, eval_env=eval_env)
+    eval_env.close()
 
     print("Done !")
 
