@@ -159,17 +159,17 @@ class GRLGym(gym.Env):
         self.show_window = show_window if idx == 0 else False
 
         self.setup_observation_space()
-
-        asyncio.get_event_loop().run_until_complete(self.async_start(level_name))
+        self.async_env_started = False
+        self.level_name = level_name 
 
     def setup_observation_space(self):
         self.define_observation_space()
 
-    async def async_start(self, level_name):
+    async def async_start(self):
         # Start game level
         self.env.start_game(show_window=self.show_window)
         await self.env.connect()
-        await self.env.change_level(level_name)
+        await self.env.change_level(self.level_name)
         await self.env.set_scripted()
 
     @abstractmethod
@@ -192,6 +192,8 @@ class GRLGym(gym.Env):
         """
 
     def reset(self, **kwargs):
+        if not self.async_env_started:
+            asyncio.get_event_loop().run_until_complete(self.async_start())
         return asyncio.get_event_loop().run_until_complete(self.async_reset(**kwargs))
 
     def step(self, action):
@@ -258,6 +260,10 @@ class GRLGym(gym.Env):
         if 'game_state' in data:
             done = True
             state = await self.env.receive_data()
+            state = {
+                **state,
+                **data,
+            }
         else:
             state = data
 

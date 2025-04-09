@@ -140,20 +140,20 @@ class CustomGRLGym(GRLGym):
         self.observation_space_dict = {
             # Rocket position
             'position': {
-                #        x   , y
-                'low':  [-700,-700],
-                'high': [700 , 200],
+                #        x    , y
+                'low':  [-700 ,-700],
+                'high': [700  , 200],
             },
             # Rocket linear velocity in pixels per second
             'linear_velocity': {
                 #        x   , y
-                'low':  [-100,-100],
+                'low':  [0   , 0  ],
                 'high': [100 , 100],
             },
             # La vitesse de rotation de Rocket en radians par seconde.
             'angular_velocity': {
                 'low':  [0],
-                'high': [100],
+                'high': [1],
             },
             # Rocket's rotation in radians
             'rotation': {
@@ -182,7 +182,7 @@ class CustomGRLGym(GRLGym):
 
     def decode_action(self, action):
         from gymnasium import spaces
-        if isinstance(action, np.int64) and self.action_space == spaces.Discrete(2):
+        if self.action_space == spaces.Discrete(2):
             return {
                 "main_thrust": int(action),
                 "rcs_left_thrust": 0, 
@@ -438,7 +438,7 @@ def main_ppo(args):
 
     agent.save(Path(output_dir, "checkpoint.pth"))
 
-    eval_env = make_env(env_id=args.env_id, idx=0, show_window=args.show_window, seed=args.seed, capture_video=args.capture_video, output_dir=f"{output_dir}/eval")()
+    eval_env = make_env(env_id=args.env_id, idx=0, show_window=True, seed=args.seed, capture_video=args.capture_video, output_dir=f"{output_dir}/eval")()
 
     from enjoy_ppo import enjoy
     enjoy(args, agent, device, eval_env=eval_env)
