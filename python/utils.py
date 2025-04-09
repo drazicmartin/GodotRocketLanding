@@ -9,6 +9,7 @@ import numpy as np
 import websockets
 from gymnasium import spaces
 import ast
+import signal
 
 class GRL:
     def __init__(
@@ -21,6 +22,13 @@ class GRL:
         self.websocket = None  # Initialize websocket as None
         self.exe_path = "GRL.exe" if platform.system() == "Windows" else "./GRL.x86_64"
         self.debug = debug
+
+        signal.signal(signal.SIGINT, self._handle_signal)
+        signal.signal(signal.SIGTERM, self._handle_signal)
+
+    def _handle_signal(self, sig, frame):
+        print(f"Signal {sig} received")
+        self.stop()
 
     async def connect(self, max_retry=5):
         if self.websocket and self.websocket.open:
