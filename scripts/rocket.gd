@@ -42,8 +42,8 @@ const DEFAULT_INPUTS = {
 	"rcs_left_thrust": 0.0,
 	"rcs_right_thrust": 0.0
 }
-const NO_DAMAGE_VELOCITY_THRESHOLD = 7
-const CRASH_VELOCITY_THRESHOLD = 30
+const NO_DAMAGE_VELOCITY_THRESHOLD = 10
+const CRASH_VELOCITY_THRESHOLD = 50
 @onready
 var main_thurster_particules = $ParticulesMT
 @onready
@@ -112,6 +112,8 @@ var end_time: float = 0
 
 func _ready() -> void:
 	Engine.time_scale = 1
+	Engine.max_fps = 60
+	Engine.max_physics_steps_per_frame = 8
 	if randomize_init:
 		# Randomize initial values
 		var random_factor = randomize_init_factor
