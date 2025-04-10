@@ -30,7 +30,7 @@ You can control only 3 Thrusters
 }
 ```
 
-### Rocket State
+### Environment State
 ```python
 {
     ## Rocket State
