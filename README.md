@@ -19,7 +19,7 @@ pip install gymnasium
 python python/simple_landing.py
 
 # For PPO learning landing, see
-python python/simple_ppo.py --num-envs 10 --num-steps 100000
+python python/simple_ppo.py --num-envs 10 --total-timesteps 100000
 # then evaluate with
 python python/enjoy.py --ckpt CHECKPOINT_PATH
 
