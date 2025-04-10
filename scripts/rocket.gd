@@ -12,6 +12,7 @@ var initial_direction : Vector2 = Vector2(0,0)
 var initial_velocity : float = 0
 @export 
 var gravity_active := true
+@export var local_thrust_factor := 1.0
 
 @export
 var invinsible_step := 10
@@ -36,7 +37,7 @@ var propellant : float = 100
 const FORCE_COLOR = Color(1, 0, 0)  # Red color for force visualization
 const LINE_SCALE = 25  # Adjust the length of the drawn force vector for better visualization
 const MAX_THRUST_POWER     = 69_900_000*Settings.THRUST_SCALE
-const MAX_RCS_THRUST_POWER = 69_900_0*4*Settings.THRUST_SCALE
+const MAX_RCS_THRUST_POWER = 69_900_0*6*Settings.THRUST_SCALE
 const DEFAULT_INPUTS = {
 	"main_thrust": 0.0,
 	"rcs_left_thrust": 0.0,
@@ -226,9 +227,9 @@ func _physics_process(delta):
 	self.inputs['rcs_left_thrust'] *= int(self.propellant > 0)
 	self.inputs['rcs_right_thrust'] *= int(self.propellant > 0)
 	
-	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust']
-	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust']
-	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] 
+	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * self.local_thrust_factor
+	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * self.local_thrust_factor
+	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * self.local_thrust_factor
 	
 	self.propellant -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
 	self.propellant = clamp(self.propellant, 0, self.initial_propellant)
