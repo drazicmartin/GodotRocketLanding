@@ -33,6 +33,7 @@ You can control only 3 Thrusters
 ### Rocket State
 ```python
 {
+    ## Rocket State
     'position': tuple(x,y),          # Rocket position
     'linear_velocity': tuple(x,y),   # Rocket linear velocity in pixels per second
     'angular_velocity': float,       # La vitesse de rotation de Rocket en radians par seconde.
@@ -40,11 +41,20 @@ You can control only 3 Thrusters
     'num_frame_computed': int,       # Number of frame since start
     'rocket_integrity': float(0-1),  # Integrity of the rocket, at 0.05, BOOOOOM...
     'propellant': int,               # Proppellant remaining
-    'wind': tuple(x,y),              # Wind information
     'temperature': float,            # Rocket's temperature, at somepoint it will melt
     'mass': float,                   # The total mass of the rocket, change according to propellant left.
     'left_leg_contact': bool,        # Rocket left  leg on ground ?
     'right_leg_contact': bool,       # Rocket right leg on ground ?
+
+    ## Planet State
+    'planet_radius': float,
+    'planet_atmosphere_size': float,
+    'planet_mass': str,
+    'planet_position': tuple(x,y),
+
+    ## Wind State
+    'wind_force': tuple(x,y),
+    'wind_direction': tuple(x,y),
 }
 ```
 
