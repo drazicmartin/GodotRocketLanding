@@ -8,9 +8,9 @@ class SimpleLanding(GRL):
 
         :param state: A dictionary representing the current state of the rocket.
         :return: A new dictionary that specifies the input for the rocket.
-        """
+        """      
 
-        main_thrust = 1
+        main_thrust = 0
         rcs_left_thrust = 0
         rcs_right_thrust = 0
 
@@ -22,7 +22,7 @@ class SimpleLanding(GRL):
 
         return action
 
-async def main(rocket: GRL, level_name='random_level_easy', show_window=False):
+async def main(rocket: GRL, level_name='level_1', show_window=False):
     rocket.start_game(show_window=show_window)
     await rocket.ignition(level_name=level_name)
     await rocket.stop()
