@@ -46,7 +46,7 @@ func _physics_process(delta: float) -> void:
 func calculate_gravitational_force(m1: Big, m2: float, distance: float) -> float:
 	if distance <= 0: # Avoid division by zero.
 		return 0.0
-	var dist = Big.new(distance).timesEquals(Settings.DIST_SCALE)
+	var dist = Big.new(distance + 0.05*radius).timesEquals(Settings.DIST_SCALE)
 	var g : Big = Big.new(1, 0)
 	return g.timesEquals(m1).timesEquals(G).timesEquals(m2).dividedBy(Big.power(dist,2)).toFloat()
 
