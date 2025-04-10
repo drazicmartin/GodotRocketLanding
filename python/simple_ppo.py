@@ -177,7 +177,8 @@ class CustomGRLGym(GRLGym):
 
         self.observation_space_names = ['position', 'linear_velocity', 'angular_velocity', 'rotation', 'propellant', 'right_leg_contact', 'left_leg_contact']
         
-        self.action_space = spaces.Discrete(2)  # Example: 4 possible actions, [nothing, main]
+        self.action_space = spaces.Discrete(4)  # Example: 4 possible actions, [main, left, right, nothing]
+        # self.action_space = spaces.Discrete(2)  # Example: 2 possible actions, [nothing, main]
         return super().setup_observation_space()
 
     def decode_action(self, action):
@@ -188,11 +189,13 @@ class CustomGRLGym(GRLGym):
                 "rcs_left_thrust": 0, 
                 "rcs_right_thrust": 0
             }
+        elif self.action_space == spaces.Discrete(4):
+            {action_name: float(i==action) for i, action_name in enumerate(self.env.get_action_name())}
         else:
             raise NotImplementedError("implement your own action decoding, or send directly the dict action")
 
     def early_stop(self, obs, reward, done, truncation, state):
-        if state['num_frame_computed'] > 200:
+        if state['num_frame_computed'] > 500:
             return done, True
         else:
             return done, truncation
@@ -202,9 +205,9 @@ class CustomGRLGym(GRLGym):
         Computes the reward signal based on the current environment state and observation.
 
         Args:
-            state (Any): The internal environment state, which may include variables 
+            state (dict): The internal environment state, which may include variables 
                         not exposed to the agent (e.g., simulation internals).
-            obs (Any): The observation received by the agent, typically a processed 
+            obs (nd.array): The observation received by the agent, typically a processed 
                     or partial view of the state.
 
         Returns:
@@ -216,30 +219,9 @@ class CustomGRLGym(GRLGym):
         """
         reward = 0
 
-        if 'game_state' in state:
-            match state['game_state']:
-                case 'victory':
-                    return 5000
-                case 'crash':
-                    return 0
-                case _ :
-                    raise NotImplementedError()
-        else:
-            pos_reward = 200/(np.linalg.norm(state['position'])*0.1 + 1)
-            x = np.linalg.norm(state['linear_velocity'])
-            speed_reward = exp(-((x-30)*0.01)) if x >= 30 else 1
-            reward += pos_reward
-
-            if state['right_leg_contact']:
-                reward += 500
-            if state['left_leg_contact']:
-                reward += 500
-            if state['left_leg_contact'] and state['right_leg_contact']:
-                reward *= 2
-            reward *= speed_reward
-            reward *= state['rocket_integrity']
-            reward *= 0.99 ** state['num_frame_computed']
-            return reward
+        raise NotImplementedError("TODO")
+    
+        return reward
 
 def make_env(env_id="GRL", idx=0, show_window=False, level_name="level_1", seed=0, capture_video=False, output_dir="runs/debug"):
     def thunk():

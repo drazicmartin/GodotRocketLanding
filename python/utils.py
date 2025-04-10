@@ -249,11 +249,9 @@ class GRLGym(gym.Env):
         """
         pass
 
+    @abstractmethod
     def decode_action(self, action):
-        if isinstance(action, np.int64) and self.action_space == spaces.Discrete(4):
-            return {action_name: float(i==action) for i, action_name in enumerate(self.env.get_action_name()) }
-        else:
-            raise NotImplementedError("implement your own action decoding, or send directly the dict action")
+        pass
 
     async def async_step(self, action):
         # Send action to the Godot server
