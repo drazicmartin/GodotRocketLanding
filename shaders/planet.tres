@@ -1,8 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://74mri0l5sc64"]
-
-[ext_resource type="Shader" path="res://shaders/planet.gdshader" id="1_6gn6a"]
-
-[resource]
-shader = ExtResource("1_6gn6a")
-shader_parameter/radius = 0.5
-shader_parameter/planet_color = Vector4(1, 1, 0, 1)
