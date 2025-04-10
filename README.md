@@ -39,7 +39,7 @@ You can control only 3 Thrusters
     'rotation': float(-pi - pi),     # Rocket's rotation in radians
     'num_frame_computed': int,       # Number of frame since start
     'rocket_integrity': float(0-1),  # Integrity of the rocket, at 0.05, BOOOOOM...
-    'propellant': int,               # Proppellant left
+    'propellant': int,               # Proppellant remaining
     'wind': tuple(x,y),              # Wind information
     'temperature': float,            # Rocket's temperature, at somepoint it will melt
     'mass': float,                   # The total mass of the rocket, change according to propellant left.
