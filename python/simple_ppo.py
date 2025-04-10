@@ -435,8 +435,6 @@ def main_ppo(args):
 
 if __name__ == "__main__":
     args = parse_args()
-
-    # main(make_env(args.env_id, 0, show_window=args.show_windows)())
     
     main_ppo(args)
     
