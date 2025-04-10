@@ -12,7 +12,7 @@ position = Vector2(270, -18140)
 
 [node name="Planet" parent="." index="3"]
 position = Vector2(0, -1)
-color = Color(0.858723, 0.362463, 0.63155, 1)
+color = Color(0.261147, 0.621931, 0.716166, 1)
 atmosphere_size = 5000.0
 
 [node name="Rocket" parent="." index="4"]

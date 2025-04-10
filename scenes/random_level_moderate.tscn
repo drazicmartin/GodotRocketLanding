@@ -4,6 +4,9 @@
 
 [node name="MainScene" instance=ExtResource("1_d1jgs")]
 
+[node name="Planet" parent="." index="3"]
+color = Color(0.815686, 0.52549, 0, 1)
+
 [node name="Rocket" parent="." index="4"]
 randomize_init = true
 randomize_init_factor = 1.5

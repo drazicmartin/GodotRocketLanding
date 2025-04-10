@@ -4,8 +4,9 @@
 
 [node name="MainScene" instance=ExtResource("1_ugxor")]
 
-[node name="WindSystem" parent="." index="0"]
-wind_force = 100.0
+[node name="WindSystem" parent="." index="0" node_paths=PackedStringArray("rocket")]
+wind_force = 0.5
+rocket = NodePath("../Rocket")
 
 [node name="Planet" parent="." index="3"]
 mass_mantissa = 1
