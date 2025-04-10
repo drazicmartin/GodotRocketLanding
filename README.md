@@ -15,9 +15,15 @@ In 2147, Earth’s orbital elevators collapsed during a solar storm, severing al
 pip install websockets
 pip install gymnasium
 
+# For simple handmade landing
 python python/simple_landing.py
-# Or 
-python python/batch_simple_landing.py
+
+# For PPO learning landing, see
+python python/simple_ppo.py --help
+# then evaluate with
+python python/enjoy.py --ckpt CHECKPOINT_PATH
+
+# Or implement your own RL algo (DQ-learning, ...)
 ```
 
 ### Rocket control
