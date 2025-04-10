@@ -1,14 +1,15 @@
 import asyncio
 from utils import GRL
+from type import State
 
 class SimpleLanding(GRL):
-    def process(self, state: dict):
+    def process(self, state: State):
         """
         Processes the current state of the rocket.
 
         :param state: A dictionary representing the current state of the rocket.
         :return: A new dictionary that specifies the input for the rocket.
-        """      
+        """
 
         main_thrust = 0
         rcs_left_thrust = 0

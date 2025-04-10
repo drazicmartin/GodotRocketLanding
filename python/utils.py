@@ -276,7 +276,7 @@ class GRLGym(gym.Env):
 
         obs = self.state_to_observation(state)
         reward = self.compute_reward(data, obs, done, truncation)
-        done, truncation = self.early_stop(obs, reward, done, truncation, state)
+        done, truncation = self.early_stop(state, obs, reward, done, truncation)
         return obs, reward, done, truncation, state
 
     def early_stop(self, obs, reward, done, truncation, state):

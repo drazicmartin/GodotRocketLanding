@@ -14,6 +14,7 @@ from utils import GRLGym
 from math import exp
 from tqdm import tqdm
 from pathlib import Path
+from type import State
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.wrappers.rendering")
@@ -196,13 +197,13 @@ class CustomGRLGym(GRLGym):
         else:
             raise NotImplementedError("implement your own action decoding, or send directly the dict action")
 
-    def early_stop(self, obs, reward, done, truncation, state):
+    def early_stop(self, state: State, obs: np.ndarray, reward: int, done: bool, truncation: bool):
         if state['num_frame_computed'] > 500:
             return done, True
         else:
             return done, truncation
 
-    def compute_reward(self, state: dict, obs: np.ndarray, done: bool, trunc: bool):
+    def compute_reward(self, state: State, obs: np.ndarray, done: bool, trunc: bool):
         """
         Computes the reward signal based on the current environment state and observation.
 
