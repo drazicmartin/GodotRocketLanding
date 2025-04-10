@@ -193,7 +193,7 @@ class CustomGRLGym(GRLGym):
                 "rcs_right_thrust": 0
             }
         elif self.action_space == spaces.Discrete(4):
-            {action_name: float(i==action) for i, action_name in enumerate(self.env.get_action_name())}
+            return {action_name: float(i==action) for i, action_name in enumerate(self.env.get_action_name())}
         else:
             raise NotImplementedError("implement your own action decoding, or send directly the dict action")
 
