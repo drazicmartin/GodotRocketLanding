@@ -111,9 +111,6 @@ var start_time: float = 0
 var end_time: float = 0
 
 func _ready() -> void:
-	Engine.time_scale = 1
-	Engine.max_fps = 60
-	Engine.max_physics_steps_per_frame = 8
 	if randomize_init:
 		# Randomize initial values
 		var random_factor = randomize_init_factor

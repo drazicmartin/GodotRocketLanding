@@ -6,4 +6,4 @@
 
 [node name="Rocket" parent="." index="4"]
 randomize_init = true
-randomize_init_factor = 2.0
+randomize_init_factor = 1.5

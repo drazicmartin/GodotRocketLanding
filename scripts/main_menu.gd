@@ -7,7 +7,6 @@ var global_peer_id = null
 
 # In the script of the new scene (e.g., main_menu.gd)
 func _ready():
-	
 	# Connect signals to this scene using Callable
 	WebSocketServer.connect("message_received", Callable(self, "_on_message_received"))
 	WebSocketServer.connect("client_connected", Callable(self, "_on_client_connected"))
@@ -53,9 +52,6 @@ func _on_check_button_button_up() -> void:
 func _on_check_button_button_down() -> void:
 	WebSocketServer.stop()
 
-func _on_start_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/random_level.tscn")
-
 func _on_start_level_1_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/level_1.tscn")
 
@@ -67,3 +63,12 @@ func _on_start_level_3_pressed() -> void:
 
 func _on_start_level_4_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/level_4.tscn")
+
+func _on_start_random_level_easy_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/random_level_easy.tscn")
+
+func _on_start_random_level_moderate_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/random_level_moderate.tscn")
+
+func _on_start_random_level_hard_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/random_level_hard.tscn")

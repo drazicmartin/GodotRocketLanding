@@ -19,6 +19,10 @@ func handle_action(data):
 		request_state.emit(self.peer_id)
 	elif action == "set_scripted":
 		Settings.control_mode = "script"
+		Engine.max_physics_steps_per_frame = 1
+		Engine.physics_jitter_fix = 0.0
+		Engine.physics_ticks_per_second = 30
+
 	elif action == "quit":
 		self.quit()
 	elif action == "change_level":

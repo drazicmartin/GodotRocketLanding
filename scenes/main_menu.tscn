@@ -52,9 +52,18 @@ text = "Game
 "
 fit_content = true
 
-[node name="Start Random levelButton" type="Button" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
+[node name="Start Random level easy" type="Button" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
 layout_mode = 2
-text = "Start Random Level"
+text = "Random Level Easy
+"
+
+[node name="Start Random level moderate" type="Button" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Random Level Moderate"
+
+[node name="Start Random level hard" type="Button" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
+layout_mode = 2
+text = "Random Level Hard"
 
 [node name="Start Level 1" type="Button" parent="VBoxContainer2/HBoxContainer/Game VBoxContainer"]
 layout_mode = 2
@@ -135,7 +144,9 @@ bbcode_enabled = true
 text = "[center] Script [/center]"
 fit_content = true
 
-[connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Random levelButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Random level easy" to="." method="_on_start_random_level_easy_pressed"]
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Random level moderate" to="." method="_on_start_random_level_moderate_pressed"]
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Random level hard" to="." method="_on_start_random_level_hard_pressed"]
 [connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Level 1" to="." method="_on_start_level_1_pressed"]
 [connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Level 2" to="." method="_on_start_level_2_pressed"]
 [connection signal="pressed" from="VBoxContainer2/HBoxContainer/Game VBoxContainer/Start Level 3" to="." method="_on_start_level_3_pressed"]

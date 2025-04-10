@@ -28,6 +28,9 @@ func _ready():
 	if "--debug" in OS.get_cmdline_args():
 		print("Running in debug mode!")
 		Settings.debug = true
+	
+	Engine.time_scale = 1.0
+	Engine.max_fps = 60
 
 func _physics_process(delta: float) -> void:
 	if Settings.control_mode == "script":
