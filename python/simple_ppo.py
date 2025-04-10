@@ -159,8 +159,8 @@ class CustomGRLGym(GRLGym):
             },
             # Rocket's rotation in radians
             'rotation': {
-                'low':  [-6.2831855],
-                'high': [ 6.2831855],
+                'low':  [-3.1415926],
+                'high': [ 3.1415926],
             },
             # Proppellant left in percent
             'propellant': {
