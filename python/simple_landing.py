@@ -10,7 +10,7 @@ class SimpleLanding(GRL):
         :return: A new dictionary that specifies the input for the rocket.
         """
 
-        main_thrust = 0
+        main_thrust = 1
         rcs_left_thrust = 0
         rcs_right_thrust = 0
 
