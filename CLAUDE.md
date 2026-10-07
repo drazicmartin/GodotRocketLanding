@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-GodotRocketLanding (GRL) is a Godot 4.3 rocket-landing simulator whose physics is exposed over a raw
+GodotRocketLanding (GRL) is a Godot 4.7 rocket-landing simulator whose physics is exposed over a raw
 WebSocket to Python, so external agents (scripted or RL-trained) can control the rocket frame-by-frame.
 The repo contains both the Godot game (GDScript, `scripts/`, `scenes/`, `shaders/`) and a Python client
 library / RL training stack (`python/`) that drives it.
@@ -12,7 +12,7 @@ library / RL training stack (`python/`) that drives it.
 ## Commands
 
 ### Running the game
-- Godot editor: open `project.godot` with Godot **4.3** (Forward Plus renderer).
+- Godot editor: open `project.godot` with Godot **4.7.2** (Forward Plus renderer).
 - Prebuilt export binaries are checked into the repo root (`GRL.exe`, `GRL.x86_64`, `GRL.pck`,
   `GRL.console.exe`, `GRL.sh`) — these are what the Python client launches as a subprocess, not build
   artifacts to regenerate casually. If you change GDScript/scenes and need the Python client to see the
@@ -57,7 +57,7 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
   `env.py` (`GRLGym` base `gymnasium.Env` + ready-to-use `GRLEnv`, registered as `GRL/Landing-v0`).
   `python/utils.py` is only a back-compat shim for the example scripts. Tests in `tests/` use a fake
   server, so they do not exercise any GDScript.
-- The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.3 after any GDScript
+- The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.7 after any GDScript
   change; a stale binary never answers `hello` and the client raises with a "re-export" error.
 
 ### Simulation core (scripts/)

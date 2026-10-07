@@ -16,3 +16,4 @@ __pycache__/
 runs/
 *.tmp
 debug/
+engine/
