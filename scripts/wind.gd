@@ -56,7 +56,7 @@ func cast_ray(start: Vector2, end: Vector2) -> Dictionary:
 func get_state():
 	return {
 		'wind_force': wind_force,
-		'wind_direction': wind_direction,
+		'wind_direction': [wind_direction.x, wind_direction.y],
 	}
 
 func _draw():

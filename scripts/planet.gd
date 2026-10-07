@@ -23,7 +23,7 @@ func get_state():
 		'planet_radius': self.radius,
 		'planet_atmosphere_size': self.atmosphere_size,
 		'planet_mass': self.mass.toPlainScientific(),
-		'planet_position': self.position,
+		'planet_position': [self.position.x, self.position.y],
 	}
 
 func _ready():

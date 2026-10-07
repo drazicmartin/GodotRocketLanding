@@ -8,8 +8,11 @@ import gymnasium as gym
 import numpy as np
 import websockets
 from gymnasium import spaces
-import ast
 import signal
+
+# Must match Settings.PROTOCOL_VERSION in scripts/settings.gd (see docs/protocol.md).
+PROTOCOL_VERSION = 1
+
 
 class GRL:
     def __init__(
@@ -23,26 +26,44 @@ class GRL:
         self.exe_path = "GRL.exe" if platform.system() == "Windows" else "./GRL.x86_64"
         self.debug = debug
 
-        signal.signal(signal.SIGINT, self._handle_signal)
-        signal.signal(signal.SIGTERM, self._handle_signal)
+        try:
+            signal.signal(signal.SIGINT, self._handle_signal)
+            signal.signal(signal.SIGTERM, self._handle_signal)
+        except ValueError:
+            pass  # not the main thread (e.g. gym AsyncVectorEnv worker): can't install handlers
 
     def _handle_signal(self, sig, frame):
         print(f"Signal {sig} received")
         self.stop()
 
     async def connect(self, max_retry=5):
-        if self.websocket and self.websocket.open:
+        if self.websocket is not None and getattr(self.websocket, 'open', True):
             print("Already connected.")
         else:
             print("Not connected. Attempting to connect...")
             try:
                 self.websocket = await websockets.connect(self.uri, open_timeout=60)
+                await self.handshake()
                 print("Connection Success : ready for lift off")
             except ConnectionRefusedError as e:
                 if max_retry > 0:
                     await self.connect(max_retry-1)
                 else:
                     raise e
+
+    async def handshake(self, timeout: float = 10.0):
+        """Fail loudly if the game binary does not speak the same protocol version."""
+        await self.send_data({'action': 'hello'})
+        try:
+            reply = await asyncio.wait_for(self.receive_data(), timeout)
+        except asyncio.TimeoutError:
+            raise RuntimeError(
+                "No reply to 'hello': the GRL binary is older than this client, re-export it from Godot."
+            )
+        if reply.get('protocol') != PROTOCOL_VERSION:
+            raise RuntimeError(
+                f"Protocol mismatch: client={PROTOCOL_VERSION}, game={reply.get('protocol')}"
+            )
 
     async def get_state(self):
         await self.send_data({
@@ -60,12 +81,7 @@ class GRL:
     async def receive_data(self):
         response = await self.websocket.recv()
         # Deserialize the JSON string back into a Python object
-        response_data = json.loads(response)
-        if 'game_state' in response_data:
-            return response_data
-        else:
-            state = self.read_state(response_data)
-            return state
+        return self.read_state(json.loads(response))
 
     async def quit_game(self):
         await self.send_data(self.get_quit_game_input())
@@ -74,7 +90,22 @@ class GRL:
         await self.quit_game()
 
     def read_state(self, state: dict):
-        return { key: ast.literal_eval(val) if isinstance(val, str) else val for key,val in state.items() }
+        # Vectors arrive as [x, y] lists; planet_mass is a scientific-notation string ("2e24").
+        if 'planet_mass' in state:
+            state['planet_mass'] = float(state['planet_mass'])
+        return state
+
+    async def step(self, action: dict, frame_skip: int = 1):
+        """Apply `action` for `frame_skip` physics ticks and return the resulting state.
+
+        The state contains a `game_state` key ("victory" / "crash") when the episode ended.
+        """
+        await self.send_data({'action': 'step', 'inputs': action, 'frame_skip': frame_skip})
+        return await self.receive_data()
+
+    async def set_seed(self, seed: int):
+        """Seed Godot's RNG; takes effect on the next restart_level / change_level."""
+        await self.send_data({'action': 'set_seed', 'seed': int(seed)})
 
     async def ignition(self, level_name:str = "level_1"):
         await self.connect()
@@ -83,9 +114,7 @@ class GRL:
         state = await self.get_state()
         while True:
             action = self.process(state)
-            await self.send_data(action)
-
-            state = await self.receive_data()
+            state = await self.step(action)
 
             if "game_state" in state:
                 print(f"Houston we have a problem : State={state['game_state']}")
@@ -117,13 +146,16 @@ class GRL:
     async def change_level(self, level_name):
         input = self.get_change_level_input(level_name)
         await self.send_data(input)
-        await self.receive_data()
+        await self.wait_ack('change_level')
     
     async def restart_level(self):
         input = self.get_restart_level_input()
         await self.send_data(input)
+        await self.wait_ack('restart_level')
+
+    async def wait_ack(self, name: str):
         data = await self.receive_data()
-        while data.get('game_state', None) != "restart":
+        while data.get('ack') != name:
             data = await self.receive_data()
 
     async def set_scripted(self):
@@ -159,6 +191,7 @@ class GRLGym(gym.Env):
             port=65000,
             show_window = False,
             level_name="random_level_easy",
+            frame_skip=1,
         ):
         super().__init__()
         
@@ -168,7 +201,10 @@ class GRLGym(gym.Env):
 
         self.setup_observation_space()
         self.async_env_started = False
-        self.level_name = level_name 
+        # One private loop per env: asyncio.get_event_loop() no longer creates one implicitly
+        self._loop = asyncio.new_event_loop()
+        self.level_name = level_name
+        self.frame_skip = frame_skip
 
     def setup_observation_space(self):
         self.define_observation_space()
@@ -199,23 +235,24 @@ class GRLGym(gym.Env):
             shaping or task-specific reward design.
         """
 
-    def reset(self, **kwargs):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         if not self.async_env_started:
-            asyncio.get_event_loop().run_until_complete(self.async_start())
+            self._loop.run_until_complete(self.async_start())
             self.async_env_started = True
-        return asyncio.get_event_loop().run_until_complete(self.async_reset(**kwargs))
+        return self._loop.run_until_complete(self.async_reset(seed=seed, options=options))
 
     def step(self, action):
-        return asyncio.get_event_loop().run_until_complete(self.async_step(action))
+        return self._loop.run_until_complete(self.async_step(action))
 
     def close(self):
-        return asyncio.get_event_loop().run_until_complete(self.async_close())
+        return self._loop.run_until_complete(self.async_close())
 
     def state_to_observation(self, state):
         observation = []
         for name in self.observation_space_names:
             vue = state[name]
-            if isinstance(vue, tuple):
+            if isinstance(vue, (list, tuple)):
                 observation.extend(state[name])
             else:
                 observation.append(state[name])
@@ -256,28 +293,16 @@ class GRLGym(gym.Env):
             raise NotImplementedError("implement your own action decoding, or send directly the dict action")
 
     async def async_step(self, action):
-        # Send action to the Godot server
+        # Send action to the Godot server; exactly one reply comes back, with `game_state` set when the episode ended
         if not isinstance(action, dict):
             action = self.decode_action(action)
-        
-        await self.env.send_data(action)
-        data = await self.env.receive_data()
 
+        state = await self.env.step(action, frame_skip=self.frame_skip)
+
+        done = 'game_state' in state
         truncation = False
-        done = False
-        obs = None
-        if 'game_state' in data:
-            done = True
-            state = await self.env.receive_data()
-            state = {
-                **state,
-                **data,
-            }
-        else:
-            state = data
-
         obs = self.state_to_observation(state)
-        reward = self.compute_reward(data, obs, done, truncation)
+        reward = self.compute_reward(state, obs, done, truncation)
         done, truncation = self.early_stop(obs, reward, done, truncation, state)
         return obs, reward, done, truncation, state
 
@@ -285,6 +310,8 @@ class GRLGym(gym.Env):
         return done, truncation
 
     async def async_reset(self, seed=None, options=None):
+        if seed is not None:
+            await self.env.set_seed(seed)
         await self.env.restart_level()
 
         # Get initial state

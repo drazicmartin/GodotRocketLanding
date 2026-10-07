@@ -5,3 +5,6 @@ const MASS_SCALE := 2e-6
 const DIST_SCALE := 2.5e5
 const THRUST_SCALE := 1e-5
 var debug := false
+
+# Version of the Godot <-> Python message protocol, see docs/protocol.md.
+const PROTOCOL_VERSION := 1

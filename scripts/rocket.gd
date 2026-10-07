@@ -288,8 +288,8 @@ func ui_update():
 
 func get_state():
 	return {
-		'position': self.position,
-		'linear_velocity': self.linear_velocity,
+		'position': [self.position.x, self.position.y],
+		'linear_velocity': [self.linear_velocity.x, self.linear_velocity.y],
 		'angular_velocity': self.angular_velocity,
 		'rotation': self.rotation,
 		'num_frame_computed': self.num_frame_computed,
