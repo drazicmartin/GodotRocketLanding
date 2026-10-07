@@ -56,6 +56,8 @@ def parse_args():
         help="if toggled, `torch.backends.cudnn.deterministic=False`")
     parser.add_argument("--cuda", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="if toggled, cuda will be enabled by default")
+    parser.add_argument("--checkpoint", type=str, default=None,
+        help="path of a saved agent checkpoint to replay with enjoy_ppo.py")
     parser.add_argument("--capture-video", type=lambda x: strtobool(x), default=False, nargs="?", const=True,
         help="weather to capture videos of the agent performances (check out `videos` folder)")
 
@@ -254,6 +256,7 @@ def make_env(env_id="GRL", idx=0, show_window=False, level_name="level_1", seed=
     def thunk():
         if env_id == "GRL":
             env = CustomGRLGym(idx=idx, port=65000, level_name=level_name, show_window=show_window)
+            env = gym.wrappers.RecordEpisodeStatistics(env)
         else:
             env = gym.make(env_id)
             if idx == 0:
@@ -326,13 +329,11 @@ def main_ppo(args):
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done | trunc).to(device)
             
-            if "episode" == info.keys():
-                n = reward.shape[0]
-                for i in range(n):
+            if "episode" in info:
+                for i in np.flatnonzero(info["_episode"]):
                     print(f"global_step={global_step}, episodic_return={info['episode']['r'][i]}")
                     writer.add_scalar("charts/episodic_return", info['episode']["r"][i], global_step)
                     writer.add_scalar("charts/episodic_length", info['episode']["l"][i], global_step)
-                    break
 
         # bootstrap value if not done
         with torch.no_grad():

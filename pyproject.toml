@@ -7,3 +7,13 @@ dependencies = ["websockets", "gymnasium", "numpy"]
 
 [project.optional-dependencies]
 train = ["torch", "tqdm", "tensorboard"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["grl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

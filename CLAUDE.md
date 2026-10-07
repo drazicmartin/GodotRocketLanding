@@ -22,7 +22,7 @@ library / RL training stack (`python/`) that drives it.
 
 ### Python client / RL stack
 ```bash
-pip install websockets gymnasium
+pip install -e .
 # for the PPO training/eval scripts (simple_ppo.py, enjoy_ppo.py):
 pip install torch tqdm
 
@@ -31,8 +31,7 @@ python python/batch_simple_landing.py    # runs 4 SimpleLanding instances concur
 python python/simple_ppo.py              # PPO training against GRLGym (gymnasium.Env wrapper)
 python python/enjoy_ppo.py               # replay a trained checkpoint (path is hardcoded in the file)
 ```
-There is no lint/test/build tooling configured in this repo (no `requirements.txt`, no CI, no GDScript
-linter, no test suite) — don't assume commands beyond what's listed above.
+There is no lint/test/build tooling configured in this repo (no GDScript linter; Python tests: `pytest`) — don't assume commands beyond what's listed above.
 
 ## Architecture
 
@@ -52,9 +51,11 @@ linter, no test suite) — don't assume commands beyond what's listed above.
   `main.get_state()` merges it (`game_state: "victory"|"crash"`) into the state, so terminal steps are still a
   single reply. `set_seed` seeds Godot's RNG; it only affects the next level load (`rocket.gd` `_ready`).
 - `Settings.control_mode` toggles `"manual"` (keyboard) vs `"script"` (external control, tree paused between steps).
-- `python/utils.py` mirrors the protocol: `GRL` (low-level async client, handshake, `step`, `set_seed`,
-  `ignition` loop calling the user's `process(state)`) and `GRLGym` (gymnasium.Env wrapper; subclasses
-  implement `compute_reward` and observation-space config). Client tests live in `tests/` and use a fake
+- The Python side is the `grl/` package (repo root, `pip install -e .`): `client.py` (`GRL` async client,
+  handshake, `step`, `set_seed`, `ignition` loop calling the user's `process(state)`), `process.py`
+  (`GameProcess` launches/terminates the binary, `find_binary` honours `$GRL_BINARY`, `find_free_port`),
+  `env.py` (`GRLGym` base `gymnasium.Env` + ready-to-use `GRLEnv`, registered as `GRL/Landing-v0`).
+  `python/utils.py` is only a back-compat shim for the example scripts. Tests in `tests/` use a fake
   server, so they do not exercise any GDScript.
 - The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.3 after any GDScript
   change; a stale binary never answers `hello` and the client raises with a "re-export" error.

@@ -48,7 +48,9 @@ if __name__ == "__main__":
     )
 
     agent = Agent(eval_env).to(device)
-    agent.load(r"runs\GRL__simple_ppo__1744210038\checkpoint.pth")
+    if args.checkpoint is None:
+        raise SystemExit("pass --checkpoint runs/<run>/checkpoint.pth")
+    agent.load(args.checkpoint)
 
     # env = make_env(env_id=args.env_id, idx=0, show_window=True, seed=args.seed, capture_video=args.capture_video, output_dir="debug/eval")()
     enjoy(args, agent, device, eval_env)

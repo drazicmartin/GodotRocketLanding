@@ -10,8 +10,8 @@ import pytest
 from gymnasium import spaces
 from websockets.asyncio.server import serve
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
-from utils import GRL, GRLGym, PROTOCOL_VERSION  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from grl import GRL, GRLEnv, GRLGym, PROTOCOL_VERSION  # noqa: E402
 
 
 def fake_state(frame, game_state=None):
@@ -201,3 +201,46 @@ def test_frame_skip_is_forwarded():
         server.close()
 
     run(go())
+
+
+class FakeLandingEnv(GRLEnv):
+    async def async_start(self):  # the fake server is already running, don't launch a binary
+        await self.env.connect()
+        await self.env.change_level(self.level_name)
+        await self.env.set_scripted()
+
+
+def test_default_env_passes_gymnasium_checker_and_truncates():
+    from gymnasium.utils.env_checker import check_env
+
+    port = start_in_thread(FakeGame(crash_after=10_000))
+    env = FakeLandingEnv(port=port, max_steps=3)
+    check_env(env, skip_render_check=True)
+    env.reset(seed=1)
+    flags = [env.step(env.action_space.sample())[2:4] for _ in range(3)]
+    assert flags == [(False, False), (False, False), (False, True)]
+
+
+def test_default_env_terminates_with_crash_reward():
+    port = start_in_thread(FakeGame(crash_after=2))
+    env = FakeLandingEnv(port=port, discrete_actions=True)
+    env.reset()
+    env.step(1)
+    _, reward, terminated, truncated, info = env.step(0)
+    assert terminated and not truncated and reward == -100.0 and info["game_state"] == "crash"
+
+
+def test_registered_id():
+    import gymnasium as gym
+
+    assert "GRL/Landing-v0" in gym.registry
+
+
+def test_process_helpers(tmp_path, monkeypatch):
+    from grl.process import BINARY_ENV_VAR, find_binary, find_free_port
+
+    fake = tmp_path / "game.bin"
+    fake.write_text("")
+    monkeypatch.setenv(BINARY_ENV_VAR, str(fake))
+    assert find_binary() == fake
+    assert 0 < find_free_port() < 65536

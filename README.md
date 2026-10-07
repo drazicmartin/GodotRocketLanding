@@ -20,6 +20,25 @@ python python/simple_landing.py
 python python/batch_simple_landing.py
 ```
 
+### Gymnasium usage
+```python
+import gymnasium as gym
+import grl  # registers GRL/Landing-v0
+
+env = gym.make("GRL/Landing-v0", level_name="random_level_easy")  # headless game launched for you
+obs, info = env.reset(seed=42)
+obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+env.close()
+```
+The binary is looked up in `$GRL_BINARY`, the repo root, then the current directory. Subclass `grl.GRLEnv`
+(override `compute_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
+`python/` still work and import through `python/utils.py`.
+
+### Tests
+```bash
+pip install -e . pytest && pytest   # client tests run against a fake server, no game binary needed
+```
+
 ### Rocket control
 You can control only 3 Thrusters
 ```python
