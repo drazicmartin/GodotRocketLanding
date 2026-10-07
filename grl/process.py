@@ -48,6 +48,9 @@ class GameProcess:
         cmd = [str(self.binary), "-p", str(self.port)]
         if not self.show_window or platform.system() == "Linux":
             cmd.append("--headless")
+            # Nobody watches: run frames back-to-back with a fixed step instead of in real time
+            # (godot --fixed-fps). It must equal 1 / physics_ticks_per_second, which set_scripted fixes at 30.
+            cmd += ["--fixed-fps", "30"]
         if self.debug:
             cmd.append("--debug")
         # Run from the binary's folder: the .pck sits next to it.

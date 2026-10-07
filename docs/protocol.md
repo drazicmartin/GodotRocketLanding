@@ -29,3 +29,9 @@ in Godot's `Big` class); the Python client converts it to `float`.
 When the episode ended during the step, the same state also carries `"game_state": "victory" | "crash"`
 (plus `"score"` on victory). That is the *terminated* signal; truncation (time limits) is decided by the client.
 Stepping again after the end replies immediately with the final state.
+
+## Speed
+Physics runs at 30 ticks per step of simulated time. Headless instances launched by the Python client get
+`--fixed-fps 30`, which makes Godot run frames back-to-back instead of waiting for real time (about 60x faster:
+~900 steps/s vs ~15 measured on one instance). Windowed instances (`show_window=True`) stay real-time so you can
+watch them. The fixed step must stay equal to `1 / physics_ticks_per_second` (set in `set_scripted`).
