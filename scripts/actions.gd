@@ -31,6 +31,8 @@ func handle_action(data: Dictionary):
 		request_state.emit(self.peer_id)
 	elif action == "set_scripted":
 		Settings.control_mode = "script"
+		# Hold the simulation until the first "step" (main.gd only re-pauses on scene load)
+		get_tree().paused = true
 		Engine.max_physics_steps_per_frame = 1
 		Engine.physics_jitter_fix = 0.0
 		Engine.physics_ticks_per_second = 30

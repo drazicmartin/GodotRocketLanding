@@ -10,7 +10,7 @@ All control messages are `{"action": ..., ...}`. Replies are one JSON object eac
 |---|---|
 | `{"action":"hello"}` | `{"ack":"hello","protocol":1}` |
 | `{"action":"change_level","level_name":"level_1"}` | `{"ack":"change_level"}` (also sent if already on that level) |
-| `{"action":"set_scripted"}` | none (physics paused, 30 ticks/s, stepped by the client) |
+| `{"action":"set_scripted"}` | none (pauses physics at once, 30 ticks/s, stepped by the client) |
 | `{"action":"set_seed","seed":42}` | none; seeds Godot's RNG, applied by the next `restart_level`/`change_level` |
 | `{"action":"restart_level"}` | `{"ack":"restart_level"}` (send `get_state` afterwards for the first observation) |
 | `{"action":"get_state"}` | state |

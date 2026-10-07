@@ -37,28 +37,27 @@ linter, no test suite) — don't assume commands beyond what's listed above.
 ## Architecture
 
 ### Godot <-> Python bridge
-- `scripts/server.gd` (`NWebSocketServer`, class autoloaded as `WebSocketServer`) is a raw TCP/WebSocket
-  server (not Godot's higher-level `WebSocketMultiplayerPeer`) that accepts one peer per launched game
-  instance and emits `message_received` / `client_connected` / `client_disconnected` signals.
-- Every inbound message is JSON. Two receivers decide what a message means based on shape:
-  - `scripts/actions.gd`: messages with an `"action"` key (`get_state`, `restart_level`, `set_scripted`,
-    `change_level`, `quit`). These are meta/control commands, not physics inputs.
-  - `scripts/main.gd`: messages *without* an `"action"` key are treated as rocket thruster inputs
-    (`main_thrust`, `rcs_left_thrust`, `rcs_right_thrust`) and applied via `Rocket.set_inputs()`.
-- `Settings.control_mode` (autoload `scripts/settings.gd`) toggles `"manual"` (keyboard, for humans) vs
-  `"script"` (external control). In `"script"` mode the tree is kept paused and advanced exactly one
-  physics step per received input via `main.gd`'s `allow_one_physics_step()` — this is what makes the
-  simulation behave like a synchronous Gym `step()` call: client sends action -> one physics tick runs ->
-  server sends back the resulting state.
-- `python/utils.py` is the client-side mirror of this protocol:
-  - `GRL` (ABC): low-level async websocket client. Launches the exported binary as a subprocess
-    (`start_game`), speaks the JSON action/state protocol, and drives a scripted loop via `ignition()`,
-    which repeatedly calls the user-supplied `process(state) -> action` method.
-  - `GRLGym` (ABC, extends `gymnasium.Env`): wraps `GRL` as a standard Gym environment (`reset`/`step`
-    close over asyncio via `run_until_complete`). Subclasses must implement `compute_reward`,
-    `get_reward`, and observation-space config (`observation_space_dict` / `observation_space_names`).
-  - `simple_landing.py` and `batch_simple_landing.py` show the low-level `GRL` usage pattern (subclass +
-    override `process`); `simple_ppo.py`/`enjoy_ppo.py` show the `GRLGym` + PPO training pattern.
+- `scripts/server.gd` (`NWebSocketServer`, autoloaded as `WebSocketServer`) is a raw TCP/WebSocket server
+  that accepts one peer per launched game instance and emits `message_received` / `client_connected` /
+  `client_disconnected` signals.
+- `scripts/actions.gd` is the **single router** for inbound JSON. Messages with an `"action"` key are
+  dispatched (`hello`, `step`, `get_state`, `restart_level`, `change_level`, `set_scripted`, `set_seed`,
+  `quit`); a bare dict without `"action"` is treated as a legacy `step`. Wire format, replies and the
+  protocol version are documented in `docs/protocol.md` (keep `Settings.PROTOCOL_VERSION` and
+  `PROTOCOL_VERSION` in `python/utils.py` in sync).
+- `Actions` emits `step_requested(inputs, frame_skip)`; `scripts/main.gd` applies the inputs via
+  `Rocket.set_inputs()`, unpauses the tree, lets `frame_skip` physics ticks run, re-pauses and sends **one**
+  state reply. This is what makes it behave like a synchronous Gym `step()`.
+- Episode end: `rocket.gd` emits `simulation_finished`; `Actions.episode_result` stores the first outcome and
+  `main.get_state()` merges it (`game_state: "victory"|"crash"`) into the state, so terminal steps are still a
+  single reply. `set_seed` seeds Godot's RNG; it only affects the next level load (`rocket.gd` `_ready`).
+- `Settings.control_mode` toggles `"manual"` (keyboard) vs `"script"` (external control, tree paused between steps).
+- `python/utils.py` mirrors the protocol: `GRL` (low-level async client, handshake, `step`, `set_seed`,
+  `ignition` loop calling the user's `process(state)`) and `GRLGym` (gymnasium.Env wrapper; subclasses
+  implement `compute_reward` and observation-space config). Client tests live in `tests/` and use a fake
+  server, so they do not exercise any GDScript.
+- The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.3 after any GDScript
+  change; a stale binary never answers `hello` and the client raises with a "re-export" error.
 
 ### Simulation core (scripts/)
 - `rocket.gd` (`RigidBody2D`): owns all rocket physics — thrust/RCS forces, propellant consumption and
