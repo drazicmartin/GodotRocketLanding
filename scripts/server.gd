@@ -99,6 +99,9 @@ func poll() -> void:
 	while not refuse_new_connections and tcp_server.is_connection_available():
 		var conn: StreamPeerTCP = tcp_server.take_connection()
 		assert(conn != null)
+		# Disable Nagle's algorithm: this protocol is one small JSON message per physics
+		# step, so batching for fewer packets only adds latency (godotengine/godot#86234).
+		conn.set_no_delay(true)
 		pending_peers.append(PendingPeer.new(conn))
 
 	var to_remove := []
