@@ -1,7 +1,6 @@
 import argparse
 import os
 import time
-from distutils.util import strtobool
 
 import gymnasium as gym
 import numpy as np
@@ -34,6 +33,16 @@ def low_capped_cubic_video_schedule(episode_id: int) -> bool:
     else:
         return episode_id % 100 == 0
 
+def strtobool(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    value = str(value).lower()
+    if value in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    if value in ("n", "no", "f", "false", "off", "0"):
+        return False
+    raise ValueError(f"invalid truth value {value!r}")
+
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
@@ -43,11 +52,11 @@ def parse_args():
         help="Display the godot window")
     parser.add_argument("--seed", type=int, default=1,
         help="seed of the experiment")
-    parser.add_argument("--torch-deterministic", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--torch-deterministic", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="if toggled, `torch.backends.cudnn.deterministic=False`")
-    parser.add_argument("--cuda", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--cuda", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="if toggled, cuda will be enabled by default")
-    parser.add_argument("--capture-video", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
+    parser.add_argument("--capture-video", type=lambda x: strtobool(x), default=False, nargs="?", const=True,
         help="weather to capture videos of the agent performances (check out `videos` folder)")
 
     # Algorithm specific arguments
@@ -61,9 +70,9 @@ def parse_args():
         help="the number of parallel game environments")
     parser.add_argument("--num-steps", type=int, default=128,
         help="the number of steps to run in each environment per policy rollout")
-    parser.add_argument("--anneal-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--anneal-lr", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="Toggle learning rate annealing for policy and value networks")
-    parser.add_argument("--gae", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--gae", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="Use GAE for advantage computation")
     parser.add_argument("--gamma", type=float, default=0.99,
         help="the discount factor gamma")
@@ -73,11 +82,11 @@ def parse_args():
         help="the number of mini-batches")
     parser.add_argument("--update-epochs", type=int, default=4,
         help="the K epochs to update the policy")
-    parser.add_argument("--norm-adv", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--norm-adv", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="Toggles advantages normalization")
     parser.add_argument("--clip-coef", type=float, default=0.2,
         help="the surrogate clipping coefficient")
-    parser.add_argument("--clip-vloss", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--clip-vloss", type=lambda x: strtobool(x), default=True, nargs="?", const=True,
         help="Toggles whether or not to use a clipped loss for the value function, as per the paper.")
     parser.add_argument("--ent-coef", type=float, default=0.01,
         help="coefficient of the entropy")

@@ -1,0 +1,9 @@
+[project]
+name = "grl"
+version = "0.1.0"
+description = "Python client and Gymnasium environment for the GodotRocketLanding simulator"
+requires-python = ">=3.10"
+dependencies = ["websockets", "gymnasium", "numpy"]
+
+[project.optional-dependencies]
+train = ["torch", "tqdm", "tensorboard"]
