@@ -28,9 +28,7 @@ var initial_propellant_mass: int = propellant_mass
 @export 
 var propellant : float = 100
 @onready var wind_system: Node2D = %WindSystem
-@onready var propellant_tank_indicator: ColorRect = $ColorRect
 @onready var initial_propellant = propellant
-@onready var initial_tank_size = propellant_tank_indicator.size
 
 
 # Constants
@@ -58,10 +56,6 @@ var animated_sprite = $AnimatedSprite2D
 @onready var rcs_left_sprite = $rcs_left
 @onready var rcs_right_sprite = $rcs_right
 
-# Rocket UI 
-@onready var integrity_text = $VBoxContainer/integrity_text
-@onready var linear_velocity_text: RichTextLabel = $VBoxContainer/linear_velocity_text
-@onready var angular_velocity_text: RichTextLabel = $VBoxContainer/angular_velocity_text
 
 @onready var planet: StaticBody2D = %Planet
 
@@ -233,7 +227,6 @@ func _physics_process(delta):
 	
 	self.propellant -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
 	self.propellant = clamp(self.propellant, 0, self.initial_propellant)
-	self.propellant_tank_indicator.size = Vector2(self.initial_tank_size.x * (self.propellant/self.initial_propellant), self.propellant_tank_indicator.size.y)
 	
 	self.mass = self.initial_propellant_mass*(self.propellant/self.initial_propellant) + self.empty_mass
 	
@@ -266,7 +259,6 @@ func _physics_process(delta):
 	self.last_know_velocity = self.linear_velocity.length()
 	was_on_ground = is_on_ground()
 	self.integrity = max(0,self.integrity)
-	self.ui_update()
 	if self.integrity <= 0.0:
 		crash()
 	
@@ -280,11 +272,6 @@ func _physics_process(delta):
 		if self.invinsible_step <= 0:
 			self.destructible = true
 			self.invinsible_start = false
-
-func ui_update():
-	self.integrity_text.text = "[center][font_size=8]Integrity[/font_size]\n %s[/center]" % int(self.integrity*100)
-	self.linear_velocity_text.text = "[center][font_size=8]Linear Velocity[/font_size]\n %s[/center]" % int(self.linear_velocity.length())
-	self.angular_velocity_text.text = "[center][font_size=8]Angular Velocity (x100)[/font_size]\n %s[/center]" % int(self.angular_velocity*100)
 
 func get_state():
 	return {
@@ -333,7 +320,6 @@ func crash():
 	main_thurster_particules.visible = false
 	left_thurster_particules.visible = false
 	right_thurster_particules.visible = false
-	$ColorRect.visible = false
 
 # Function to check if the rocket is on the ground
 func is_on_ground() -> bool:

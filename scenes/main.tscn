@@ -1,4 +1,4 @@
-[gd_scene load_steps=79 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=80 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://cfarcdwq0ai5y" path="res://assets/logo_alpha.png" id="13_cwls3"]
 [ext_resource type="Script" path="res://scripts/planet.gd" id="13_itfad"]
 
+[ext_resource type="Script" path="res://scripts/hud.gd" id="99_hud"]
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_a8c1y"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dar0e"]
@@ -609,68 +610,13 @@ ignore_rotation = false
 rotation_smoothing_enabled = true
 rotation_smoothing_speed = 100.0
 
-[node name="ColorRect" type="ColorRect" parent="Rocket"]
-custom_minimum_size = Vector2(0, 5)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -48.0
-offset_top = -353.0
-offset_right = 52.0
-offset_bottom = -343.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 6
-size_flags_vertical = 6
-color = Color(1, 0.306274, 0.573644, 0.686275)
-metadata/_edit_use_anchors_ = true
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Rocket"]
-custom_minimum_size = Vector2(150, 0)
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = -319.0
-offset_top = -156.0
-offset_right = -169.0
-offset_bottom = 152.0
-grow_vertical = 2
-
-[node name="angular_velocity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
-modulate = Color(1, 0.203922, 1, 1)
-z_index = 1
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_font_sizes/normal_font_size = 50
-bbcode_enabled = true
-text = "[center]100[/center]"
-metadata/_edit_use_anchors_ = true
-
-[node name="linear_velocity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
-modulate = Color(1, 0.203922, 1, 1)
-z_index = 1
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_font_sizes/normal_font_size = 50
-bbcode_enabled = true
-text = "[center]100[/center]"
-metadata/_edit_use_anchors_ = true
-
-[node name="integrity_text" type="RichTextLabel" parent="Rocket/VBoxContainer"]
-modulate = Color(1, 0.203922, 1, 1)
-z_index = 1
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_font_sizes/normal_font_size = 50
-bbcode_enabled = true
-text = "[center]100[/center]"
-metadata/_edit_use_anchors_ = true
-
 [node name="Sprite2D" type="Sprite2D" parent="Rocket"]
 position = Vector2(0, -40)
 scale = Vector2(0.016, 0.016)
 texture = ExtResource("13_cwls3")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("99_hud")
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]
 [connection signal="simulation_finished" from="Rocket" to="Actions" method="_on_rocket_simulation_finished"]

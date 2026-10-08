@@ -78,6 +78,12 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
 - `scripts/Big.gd`: arbitrary-precision (mantissa/exponent) number class used for planet mass so gravity
   math doesn't overflow `float`/`int`; see `Settings.MASS_SCALE`/`DIST_SCALE`/`THRUST_SCALE` for the
   scale factors used to keep everything else in normal float range.
+- UI: `scripts/ui_theme.gd` (shared theme), `scripts/hud.gd` (flight HUD, a `CanvasLayer` in `main.tscn`)
+  and `scripts/main_menu.gd` build their UI in code. Every HUD value must come from live simulation state
+  (rocket/planet/wind/actions/server), never placeholders; units are simulation px. The HUD disables itself
+  when headless. Screenshots for checking UI: `engine/Godot_v4.7.2-stable_win64_console.exe --path .
+  --write-movie out.png --fixed-fps 30 --quit-after 60 res://scenes/level_1.tscn` (with the editor binary
+  use `--port`, not `-p`, which opens the project manager).
 - `main_menu.gd` / level scenes (`scenes/level_*.tscn`, `scenes/random_level_*.tscn`) select which
   planet/rocket/wind configuration loads; `Actions.change_level()` / `restart_level()` is how both humans
   (Escape/Restart keybinds) and the Python client (`change_level`/`restart_level` actions) switch levels.

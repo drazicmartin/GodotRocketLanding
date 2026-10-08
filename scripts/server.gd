@@ -38,9 +38,12 @@ var pending_peers: Array[PendingPeer] = []
 var peers: Dictionary
 
 
-func listen(port: int) -> int:
+var port: int = 0
+
+func listen(p_port: int) -> int:
 	assert(not tcp_server.is_listening())
-	return tcp_server.listen(port)
+	port = p_port
+	return tcp_server.listen(p_port)
 
 
 func stop() -> void:
