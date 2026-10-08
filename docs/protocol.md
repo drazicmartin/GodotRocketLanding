@@ -22,7 +22,8 @@ A bare dict of inputs (no `"action"`) is still accepted and means `step` with `f
 ## Inputs
 `main_thrust`, `rcs_left_thrust`, `rcs_right_thrust`: float in `[0, 1]` (clamped; missing keys default to 0).
 `legs`: optional float in `[0, 1]`, latched (`>= 0.5` deploys, `< 0.5` retracts; omitted keeps the current state).
-Legs start retracted, take 0.8 s to deploy/retract and add linear/angular damping when deployed.
+Legs start retracted and take 0.8 s to deploy/retract; when deployed the main engine loses 15 % and the RCS 40 %
+of their force (gravity is unaffected).
 
 ## State
 Vectors are `[x, y]` lists. Landing pad keys: `landing_pad_position` ([x, y] on the surface),

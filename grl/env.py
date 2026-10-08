@@ -158,8 +158,8 @@ class GRLEnv(GRLGym):
     Observation: position(2), linear_velocity(2), angular_velocity, rotation, propellant (0-100),
     left/right leg contact, landing_pad_distance (signed arc px to the pad). Victory requires touching down on
     the randomly placed pad with the legs deployed and staying still for 0.5 s; a landing elsewhere does not
-    end the episode. Action: Box(4) adds a 4th "legs" command (> 0 deploys, deployed legs add drag on speed
-    and rotation), legs_extension (0..1) is observed. Thrusters: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
+    end the episode. Action: Box(4) adds a 4th "legs" command (> 0 deploys; deployed legs cost 15 % main
+    thrust and 40 % RCS), legs_extension (0..1) is observed. Thrusters: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
     (a + 1) / 2 so -1 = off and 1 = full (symmetric bounds are what SB3/Tianshou/RLlib policies expect), or
     Discrete(2) (main engine off/on) with `discrete_actions=True`.
     Reward: shaped towards the pad (see `get_reward`), override it for your own shaping.

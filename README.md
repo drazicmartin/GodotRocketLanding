@@ -80,8 +80,8 @@ pip install -e . pytest && pytest   # client tests run against a fake server, no
 }
 ```
 To win, touch down on the landing pad with the legs deployed and stay still (< 2 px/s) for 0.5 s.
-The legs are spring struts: they soften the touchdown but, when deployed, add drag (about 20 % less
-speed gained per second of thrust and 40 % less spin from the RCS).
+The legs are spring struts: they soften the touchdown, but when deployed the thrusters lose efficiency
+(main engine -15 %, RCS -40 %, so steering and rotating is harder). Gravity and the fall are unaffected.
 
 ### Rocket State
 Vectors are `[x, y]` lists. When an episode ends, the last state also contains `game_state` (`"victory"` or `"crash"`).

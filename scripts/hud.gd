@@ -47,6 +47,7 @@ func _ready() -> void:
 	_build_environment_panel()
 	_build_banner()
 	_build_hint()
+	call_deferred("_process", 0.0)  # real values from the very first frame (once every sibling is ready)
 
 
 # ---------------------------------------------------------------- layout

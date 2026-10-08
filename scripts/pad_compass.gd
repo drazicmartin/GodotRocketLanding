@@ -23,6 +23,7 @@ func _ready() -> void:
 		set_process(false)
 		return
 	z_index = 5
+	call_deferred("_process", 0.0)  # correct size and position from the very first frame (after the pad is ready)
 
 func _physics_process(_delta: float) -> void:
 	position = centre_offset

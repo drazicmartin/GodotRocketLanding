@@ -64,14 +64,15 @@ var animated_sprite = $AnimatedSprite2D
 # ---- Landing legs: spring struts that deploy / retract (see update_legs) ----
 @export var legs_start_deployed := false
 const LEG_DEPLOY_TIME := 0.8          # s for a full deploy or retract animation
-const LEG_ANCHOR_Y := -12.0           # strut attachment height (rocket space, body bottom is y = 0)
-const LEG_ANCHOR_X_RETRACTED := 12.0
-const LEG_ANCHOR_X_DEPLOYED := 22.0
-const LEG_LENGTH := 24.0              # rest length when fully deployed: feet 12 px below the hull
-const LEG_STIFFNESS := 22.0           # spring constant per leg
-const LEG_DAMPING := 15.0             # damper per leg
-const LEG_LINEAR_DAMP := 0.3          # extra drag when deployed: harder to gain speed...
-const LEG_ANGULAR_DAMP := 2.5         # ...and to rotate
+# Suspension probe: a ray straight down (rocket space) from above each foot. Body bottom is y = 0.
+const LEG_HINGE := Vector2(13.0, -18.0)    # strut hinge on the hull (right side; mirrored for the left)
+const LEG_FOOT_X := 27.0                   # foot x when deployed
+const LEG_LENGTH := 30.0                   # hinge height to foot when deployed: feet 12 px below the hull
+const LEG_STIFFNESS := 22.0                # spring constant per leg
+const LEG_DAMPING := 15.0                  # damper per leg
+# Deployed legs only make the thrusters less effective (they never touch gravity or the fall speed):
+const LEG_MAIN_THRUST_PENALTY := 0.15      # main engine -15 %
+const LEG_RCS_PENALTY := 0.4               # RCS -40 %: harder to rotate
 # Landing is only won once the rocket rests on the pad: legs down, both feet in contact, nearly still.
 const SETTLE_SPEED := 2.0             # px/s
 const SETTLE_ANGULAR_SPEED := 0.1     # rad/s
@@ -243,9 +244,11 @@ func _physics_process(delta):
 	self.inputs['rcs_left_thrust'] *= int(self.propellant > 0)
 	self.inputs['rcs_right_thrust'] *= int(self.propellant > 0)
 	
-	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * self.local_thrust_factor
-	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * self.local_thrust_factor
-	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * self.local_thrust_factor
+	var main_factor := 1.0 - LEG_MAIN_THRUST_PENALTY * legs_extension
+	var rcs_factor := 1.0 - LEG_RCS_PENALTY * legs_extension
+	self.main_thurster_force_vector = Vector2(0, -1).rotated(self.rotation) * MAX_THRUST_POWER * self.inputs['main_thrust'] * self.local_thrust_factor * main_factor
+	self.rcs_left_force_vector = Vector2(1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_left_thrust'] * self.local_thrust_factor * rcs_factor
+	self.rcs_right_force_vector = Vector2(-1, 0) * MAX_RCS_THRUST_POWER * self.inputs['rcs_right_thrust'] * self.local_thrust_factor * rcs_factor
 	
 	self.propellant -= (self.inputs['main_thrust'] + self.inputs['rcs_left_thrust'] + self.inputs['rcs_right_thrust']) * delta
 	self.propellant = clamp(self.propellant, 0, self.initial_propellant)
@@ -370,16 +373,14 @@ func is_settled() -> bool:
 
 func leg_anchor(side: int) -> Vector2:
 	# side: -1 left, +1 right. The strut swings outward while deploying.
-	var x := lerpf(LEG_ANCHOR_X_RETRACTED, LEG_ANCHOR_X_DEPLOYED, legs_extension)
-	return Vector2(side * x, LEG_ANCHOR_Y)
+	# Top of the suspension probe, straight above the foot
+	var x := lerpf(LEG_HINGE.x, LEG_FOOT_X, legs_extension)
+	return Vector2(side * x, LEG_HINGE.y)
 
 func update_legs(delta: float) -> void:
 	# Deploy / retract animation (simulation time, so it is deterministic and follows the step protocol)
 	var target := 1.0 if legs_deployed else 0.0
 	legs_extension = move_toward(legs_extension, target, delta / LEG_DEPLOY_TIME)
-	# Deployed legs catch air and add rotational inertia: more drag on speed and on rotation
-	self.linear_damp = LEG_LINEAR_DAMP * legs_extension
-	self.angular_damp = LEG_ANGULAR_DAMP * legs_extension
 
 	# Suspension: each leg is a spring along the rocket's "down" axis, probed with a ray
 	var rest := LEG_LENGTH * legs_extension
