@@ -58,6 +58,8 @@ var animated_sprite = $AnimatedSprite2D
 
 
 @onready var planet: StaticBody2D = %Planet
+# Scenes without a pad (e.g. debug) keep the old rule: any safe landing wins.
+@onready var landing_pad: Node2D = get_parent().get_node_or_null("LandingPad")
 
 @onready
 var raycast_left = $RayCast2DLeft
@@ -262,7 +264,7 @@ func _physics_process(delta):
 	if self.integrity <= 0.0:
 		crash()
 	
-	if was_on_ground and is_on_ground() and not self.crashed:
+	if was_on_ground and is_on_ground() and not self.crashed and self.is_on_landing_pad():
 		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
 	elif was_on_ground and not is_on_ground():
 		start_time = Time.get_ticks_msec()
@@ -320,6 +322,10 @@ func crash():
 	main_thurster_particules.visible = false
 	left_thurster_particules.visible = false
 	right_thurster_particules.visible = false
+
+func is_on_landing_pad() -> bool:
+	# Landing elsewhere is allowed (no damage, no end of episode): the rocket can lift off and hop to the pad.
+	return landing_pad == null or landing_pad.contains(self.position)
 
 # Function to check if the rocket is on the ground
 func is_on_ground() -> bool:

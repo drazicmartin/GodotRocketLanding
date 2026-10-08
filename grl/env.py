@@ -155,7 +155,8 @@ class GRLEnv(GRLGym):
     """Ready-to-train landing env: `gym.make("GRL/Landing-v0")`.
 
     Observation: position(2), linear_velocity(2), angular_velocity, rotation, propellant (0-100),
-    left/right leg contact. Action: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
+    left/right leg contact, landing_pad_distance (signed arc px to the pad). Victory requires touching down on
+    the randomly placed pad; a safe landing elsewhere does not end the episode. Action: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
     (a + 1) / 2 so -1 = off and 1 = full (symmetric bounds are what SB3/Tianshou/RLlib policies expect), or
     Discrete(2) (main engine off/on) with `discrete_actions=True`.
     Reward: shaped towards the pad (see `get_reward`), override it for your own shaping.
@@ -164,7 +165,7 @@ class GRLEnv(GRLGym):
 
     observation_space_names = [
         'position', 'linear_velocity', 'angular_velocity', 'rotation',
-        'propellant', 'left_leg_contact', 'right_leg_contact',
+        'propellant', 'left_leg_contact', 'right_leg_contact', 'landing_pad_distance',
     ]
     observation_space_dict = {
         'position': {'low': [-np.inf] * 2, 'high': [np.inf] * 2},
@@ -174,6 +175,8 @@ class GRLEnv(GRLGym):
         'propellant': {'low': [0], 'high': [100]},
         'left_leg_contact': {'low': [0], 'high': [1]},
         'right_leg_contact': {'low': [0], 'high': [1]},
+        # signed surface distance to the pad centre (px), > 0 when the pad is to the rocket's local right
+        'landing_pad_distance': {'low': [-np.inf], 'high': [np.inf]},
     }
 
     def __init__(self, discrete_actions=False, max_steps=1000, **kwargs):
@@ -205,7 +208,7 @@ class GRLEnv(GRLGym):
         if state.get('game_state') == 'crash':
             return -100.0
         # Stay close to the pad, slow down, keep the hull intact.
-        distance = float(np.linalg.norm(state['position']))
+        distance = float(np.linalg.norm(np.subtract(state['position'], state['landing_pad_position'])))
         speed = float(np.linalg.norm(state['linear_velocity']))
         return float(-0.001 * distance - 0.01 * speed) * state['rocket_integrity']
 

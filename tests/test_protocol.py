@@ -33,6 +33,10 @@ def fake_state(frame, game_state=None):
         "planet_atmosphere_size": 600.0,
         "planet_mass": "2e24",
         "planet_position": [0.0, 50000.0],
+        "landing_pad_position": [300.0, 0.0],
+        "landing_pad_width": 90.0,
+        "landing_pad_distance": 300.0 - frame,
+        "on_landing_pad": False,
     }
     if game_state:
         state["game_state"] = game_state
@@ -174,7 +178,7 @@ def test_gym_episode_terminates_on_single_reply_and_resets():
     port = start_in_thread(game)
     env = FakeGymEnv(port=port)
     obs, _ = env.reset(seed=7)
-    assert obs.shape == (5,) and obs.dtype == np.float32
+    assert obs.shape == (5,) and obs.dtype == np.float32  # custom obs subset
     done = False
     steps = 0
     while not done:

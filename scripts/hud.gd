@@ -10,6 +10,7 @@ const C = preload("res://scripts/ui_theme.gd")
 @onready var planet: StaticBody2D = main.get_node("Planet")
 @onready var wind: Node2D = main.get_node("WindSystem")
 @onready var actions: Node = main.get_node("Actions")
+@onready var pad: Node2D = main.get_node_or_null("LandingPad")
 
 var root: Control
 var values := {}       # name -> value Label
@@ -107,6 +108,7 @@ func _build_flight_panel() -> void:
 	var panel: Control = box.get_parent()
 	panel.offset_left = 8
 	panel.offset_top = 52
+	_row(box, "pad", "LANDING PAD")
 	_row(box, "alt", "ALTITUDE")
 	_row(box, "vs", "VERT SPEED")
 	_row(box, "hs", "HORIZ SPEED")
@@ -229,6 +231,13 @@ func _process(_delta: float) -> void:
 		top_link.add_theme_color_override("font_color", C.TEXT_DIM)
 
 	# flight
+	if pad == null:
+		_show("pad", "ANYWHERE", C.TEXT_DIM)
+	elif pad.contains(pos):
+		_show("pad", "ON PAD", C.OK)
+	else:
+		var arc: float = pad.arc_distance(pos)
+		_show("pad", "%s%.0f px" % ["▶" if arc > 0 else "◀", absf(arc)], C.ACCENT)
 	_show("alt", "%.1f px" % altitude)
 	var hs := vel.dot(right)
 	_show("vs", "%s%.1f px/s" % [_dir(vs, "▲", "▼"), absf(vs)], C.DANGER if vs < -rocket.CRASH_VELOCITY_THRESHOLD else C.TEXT)

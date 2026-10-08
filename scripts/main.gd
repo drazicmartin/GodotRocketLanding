@@ -57,6 +57,9 @@ func get_state():
 	state.merge(Rocket.get_state())
 	state.merge(Wind.get_state())
 	state.merge(Planet.get_state())
+	var pad := get_node_or_null("LandingPad")
+	if pad != null:
+		state.merge(pad.get_state())
 	# Terminal info ("game_state") rides along the last state instead of being a separate message.
 	state.merge(Action.episode_result)
 	return state

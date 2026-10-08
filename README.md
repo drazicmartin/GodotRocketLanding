@@ -47,7 +47,7 @@ end to end (short budgets) and launches one headless game per parallel env:
 | TorchRL | `examples/torchrl_ppo.py` | `pip install -e .[torchrl]` |
 | CleanRL / plain Gymnasium | `examples/gymnasium_cleanrl.py`, `python/simple_ppo.py` | `pip install -e .[train]` |
 
-Env contract: observation `Box(9,)` float32; action `Box(3,)` in `[-1, 1]` mapped to thrust `(a+1)/2`
+Env contract: observation `Box(10,)` float32 (includes `landing_pad_distance`); action `Box(3,)` in `[-1, 1]` mapped to thrust `(a+1)/2`
 (or `Discrete(2)` with `discrete_actions=True`); `info` has the full state plus `game_state`
 (`running`/`victory`/`crash`) and `is_success` on every step; `render_mode="human"` shows the game window;
 `port=None` (default) picks a free port. Sample Factory is not covered (no Windows support).
@@ -88,6 +88,10 @@ Vectors are `[x, y]` lists. When an episode ends, the last state also contains `
     'planet_atmosphere_size': float,
     'planet_mass': float,
     'planet_position': [x, y],
+    'landing_pad_position': [x, y],  # random per level load (seeded), victory = safe touchdown on it
+    'landing_pad_width': float,
+    'landing_pad_distance': float,   # signed surface distance to the pad centre, > 0 = pad to the right
+    'on_landing_pad': bool,
 }
 ```
 
