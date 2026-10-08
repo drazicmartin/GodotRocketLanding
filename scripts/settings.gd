@@ -8,3 +8,7 @@ var debug := false
 
 # Version of the Godot <-> Python message protocol, see docs/protocol.md.
 const PROTOCOL_VERSION := 1
+
+# Started by a client with a port argument (the Python client always passes -p): the game exits when that
+# client disconnects, so killed training workers never leave orphan game processes behind.
+var launched_by_client: bool = "-p" in OS.get_cmdline_args() or "--port" in OS.get_cmdline_args()

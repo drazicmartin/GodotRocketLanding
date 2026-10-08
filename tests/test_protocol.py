@@ -165,10 +165,7 @@ class FakeGymEnv(GRLGym):
     def decode_action(self, action):
         return {"main_thrust": float(action), "rcs_left_thrust": 0.0, "rcs_right_thrust": 0.0}
 
-    def compute_reward(self, state, obs, victory, crash):
-        return 1.0
-
-    def get_reward(self, state):
+    def get_reward(self, state, obs, terminated, truncated):
         return 1.0
 
 
@@ -244,3 +241,17 @@ def test_process_helpers(tmp_path, monkeypatch):
     monkeypatch.setenv(BINARY_ENV_VAR, str(fake))
     assert find_binary() == fake
     assert 0 < find_free_port() < 65536
+
+
+def test_info_keys_are_stable_and_actions_are_symmetric():
+    port = start_in_thread(FakeGame(crash_after=2))
+    env = FakeLandingEnv(port=port)
+    _, info0 = env.reset()
+    _, _, _, _, info1 = env.step(np.zeros(3, dtype=np.float32))
+    _, _, terminated, _, info2 = env.step(np.zeros(3, dtype=np.float32))
+    # Tianshou/TorchRL stack infos: every step must carry the same keys
+    assert set(info0) == set(info1) == set(info2)
+    assert (info1["game_state"], info2["game_state"], info2["is_success"]) == ("running", "crash", False)
+    assert terminated
+    assert env.decode_action(np.array([-1.0, 0.0, 1.0])) == {
+        "main_thrust": 0.0, "rcs_left_thrust": 0.5, "rcs_right_thrust": 1.0}

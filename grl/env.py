@@ -13,16 +13,22 @@ class GRLGym(gym.Env):
     def __init__(
             self,
             idx=0,
-            port=65000,
+            port=None,
             show_window = False,
             level_name="random_level_easy",
             frame_skip=1,
             binary=None,
+            render_mode=None,
         ):
         super().__init__()
+        # Gymnasium convention: render_mode="human" means "show the game window" (Godot renders it itself).
+        self.render_mode = render_mode
+        if render_mode == "human":
+            show_window = True
 
-        # Initialize the Godot environment
-        self.env = GRL(port=port+idx, binary=binary)
+        # Initialize the Godot environment. port=None picks a free port, so frameworks that create envs on
+        # their own (SB3 SubprocVecEnv, RLlib workers, ...) never collide; an explicit port is offset by idx.
+        self.env = GRL(port=None if port is None else port + idx, binary=binary)
         self.show_window = show_window if idx == 0 else False
 
         self.setup_observation_space()
@@ -42,23 +48,16 @@ class GRLGym(gym.Env):
         await self.env.change_level(self.level_name)
         await self.env.set_scripted()
 
-    def compute_reward(self, state: dict, obs: np.ndarray, victory: bool, crash: bool):
+    def get_reward(self, state: dict, obs: np.ndarray, terminated: bool, truncated: bool) -> float:
+        """Reward for the step that produced `state` (full game state, `game_state` set on the last step).
+
+        Override it for custom reward shaping. Not named `compute_reward`: Stable-Baselines3 and HER treat any
+        env with a `compute_reward` method as a goal-conditioned env. Subclasses written against the old name
+        still work, they are called from here.
         """
-        Computes the reward signal based on the current environment state and observation.
-
-        Args:
-            state (Any): The internal environment state, which may include variables 
-                        not exposed to the agent (e.g., simulation internals).
-            obs (Any): The observation received by the agent, typically a processed 
-                    or partial view of the state.
-
-        Returns:
-            float: The computed reward value that will be used by the learning algorithm.
-
-        Notes:
-            This method must be implemented by subclasses. It allows custom reward
-            shaping or task-specific reward design.
-        """
+        legacy = getattr(self, "compute_reward", None)
+        if legacy is not None:
+            return legacy(state, obs, terminated, truncated)
         raise NotImplementedError
 
     def reset(self, seed=None, options=None):
@@ -116,9 +115,21 @@ class GRLGym(gym.Env):
         done = 'game_state' in state
         truncation = False
         obs = self.state_to_observation(state)
-        reward = self.compute_reward(state, obs, done, truncation)
+        reward = self.get_reward(state, obs, done, truncation)
         done, truncation = self.early_stop(obs, reward, done, truncation, state)
-        return obs, reward, done, truncation, state
+        return obs, float(reward), done, truncation, self.state_to_info(state)
+
+    def state_to_info(self, state: dict) -> dict:
+        """Info dict with the same keys on every step.
+
+        Frameworks that stack infos into buffers (Tianshou, TorchRL, vector envs) choke on keys that only appear
+        on the last step, so `game_state` is always present ("running" | "victory" | "crash"), and
+        `is_success` is the standard success flag (logged by Stable-Baselines3 as success_rate).
+        """
+        info = {key: value for key, value in state.items() if key != 'score'}
+        info['game_state'] = state.get('game_state', 'running')
+        info['is_success'] = info['game_state'] == 'victory'
+        return info
 
     def early_stop(self, obs, reward, done, truncation, state):
         return done, truncation
@@ -132,7 +143,7 @@ class GRLGym(gym.Env):
         state = await self.env.get_state()
 
         obs = self.state_to_observation(state)
-        return obs, {}
+        return obs, self.state_to_info(state)
 
     def render(self, mode="human"):
         pass  # Rendering handled in Godot
@@ -144,9 +155,10 @@ class GRLEnv(GRLGym):
     """Ready-to-train landing env: `gym.make("GRL/Landing-v0")`.
 
     Observation: position(2), linear_velocity(2), angular_velocity, rotation, propellant (0-100),
-    left/right leg contact. Action: Box(3) in [0, 1] = (main, rcs_left, rcs_right) thrust, or
+    left/right leg contact. Action: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
+    (a + 1) / 2 so -1 = off and 1 = full (symmetric bounds are what SB3/Tianshou/RLlib policies expect), or
     Discrete(2) (main engine off/on) with `discrete_actions=True`.
-    Reward: shaped towards the pad (see `compute_reward`), override it for your own shaping.
+    Reward: shaped towards the pad (see `get_reward`), override it for your own shaping.
     Episodes end on "victory"/"crash" (terminated) or after `max_steps` ticks (truncated).
     """
 
@@ -173,21 +185,21 @@ class GRLEnv(GRLGym):
         if self.discrete_actions:
             self.action_space = spaces.Discrete(2)
         else:
-            self.action_space = spaces.Box(0.0, 1.0, shape=(3,), dtype=np.float32)
+            self.action_space = spaces.Box(-1.0, 1.0, shape=(3,), dtype=np.float32)
         self.define_observation_space()
 
     def decode_action(self, action):
         names = self.env.get_action_name()
         if self.discrete_actions:
             return {names[0]: float(action), names[1]: 0.0, names[2]: 0.0}
-        return {name: float(np.clip(value, 0.0, 1.0)) for name, value in zip(names, action)}
+        return {name: float((np.clip(value, -1.0, 1.0) + 1.0) / 2.0) for name, value in zip(names, action)}
 
     def early_stop(self, obs, reward, done, truncation, state):
         if not done and state['num_frame_computed'] >= self.max_steps:
             truncation = True
         return done, truncation
 
-    def compute_reward(self, state, obs, done, truncation):
+    def get_reward(self, state, obs, terminated, truncated):
         if state.get('game_state') == 'victory':
             return 100.0
         if state.get('game_state') == 'crash':

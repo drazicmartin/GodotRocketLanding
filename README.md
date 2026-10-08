@@ -31,8 +31,26 @@ obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
 env.close()
 ```
 The binary is looked up in `$GRL_BINARY`, the repo root, then the current directory. Subclass `grl.GRLEnv`
-(override `compute_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
+(override `get_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
 `python/` still work and import through `python/utils.py`.
+
+### RL frameworks
+`GRLEnv` is a standard Gymnasium env, so any Gymnasium-compatible library works. Each example below was run
+end to end (short budgets) and launches one headless game per parallel env:
+
+| Framework | Example | Install |
+|---|---|---|
+| Stable-Baselines3 | `examples/sb3_ppo.py` | `pip install -e .[sb3]` |
+| Ray RLlib | `examples/rllib_ppo.py` | `pip install -e .[rllib]` |
+| skrl | `examples/skrl_ppo.py` | `pip install -e .[skrl]` |
+| Tianshou (2.x) | `examples/tianshou_ppo.py` | `pip install -e .[tianshou]` |
+| TorchRL | `examples/torchrl_ppo.py` | `pip install -e .[torchrl]` |
+| CleanRL / plain Gymnasium | `examples/gymnasium_cleanrl.py`, `python/simple_ppo.py` | `pip install -e .[train]` |
+
+Env contract: observation `Box(9,)` float32; action `Box(3,)` in `[-1, 1]` mapped to thrust `(a+1)/2`
+(or `Discrete(2)` with `discrete_actions=True`); `info` has the full state plus `game_state`
+(`running`/`victory`/`crash`) and `is_success` on every step; `render_mode="human"` shows the game window;
+`port=None` (default) picks a free port. Sample Factory is not covered (no Windows support).
 
 ### Tests
 ```bash

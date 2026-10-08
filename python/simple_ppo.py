@@ -208,7 +208,7 @@ class CustomGRLGym(GRLGym):
         else:
             return done, truncation
 
-    def compute_reward(self, state: dict, obs: np.ndarray, done: bool, trunc: bool):
+    def get_reward(self, state: dict, obs: np.ndarray, done: bool, trunc: bool):
         """
         Computes the reward signal based on the current environment state and observation.
 

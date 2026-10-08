@@ -35,7 +35,7 @@ def enjoy(args, agent, device, eval_env=None):
             break
 
     if 'game_state' in info:
-        print(f"{info['game_state']=}")
+        print(f"{info['game_state']=}")  # "victory" | "crash" | "running" (truncated)
     else:
         print(info)
 

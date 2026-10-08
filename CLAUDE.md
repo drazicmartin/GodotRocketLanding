@@ -55,6 +55,11 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
   handshake, `step`, `set_seed`, `ignition` loop calling the user's `process(state)`), `process.py`
   (`GameProcess` launches/terminates the binary, `find_binary` honours `$GRL_BINARY`, `find_free_port`),
   `env.py` (`GRLGym` base `gymnasium.Env` + ready-to-use `GRLEnv`, registered as `GRL/Landing-v0`).
+  `examples/` has one runnable training script per RL library (SB3, RLlib, skrl, Tianshou, TorchRL,
+  Gymnasium/CleanRL). Keep `info` keys identical on every step (Tianshou/TorchRL stack them) and don't add a
+  `compute_reward` method to envs (SB3 treats it as a GoalEnv); rewards go in `get_reward`.
+  A game launched with `-p` quits when its client disconnects (`Settings.launched_by_client`), so killed
+  workers don't leave orphan processes.
   `python/utils.py` is only a back-compat shim for the example scripts. Tests in `tests/` use a fake
   server, so they do not exercise any GDScript.
 - The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.7 after any GDScript

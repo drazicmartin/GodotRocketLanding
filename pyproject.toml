@@ -7,6 +7,11 @@ dependencies = ["websockets", "gymnasium", "numpy"]
 
 [project.optional-dependencies]
 train = ["torch", "tqdm", "tensorboard"]
+sb3 = ["stable-baselines3>=2.3", "torch"]
+rllib = ["ray[rllib]>=2.40", "torch"]
+skrl = ["skrl>=2", "torch"]
+tianshou = ["tianshou[eval]>=2", "torch"]
+torchrl = ["torchrl>=0.14", "torch"]
 
 [build-system]
 requires = ["setuptools>=64"]

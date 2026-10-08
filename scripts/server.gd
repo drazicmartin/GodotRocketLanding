@@ -127,6 +127,8 @@ func poll() -> void:
 		if p.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			client_disconnected.emit(id)
 			to_remove.append(id)
+			if Settings.launched_by_client:
+				get_tree().quit()
 			continue
 
 		while p.get_available_packet_count():
