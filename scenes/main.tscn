@@ -1,4 +1,4 @@
-[gd_scene load_steps=83 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=84 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://scripts/landing_pad.gd" id="98_pad"]
 [ext_resource type="Script" path="res://scripts/pad_compass.gd" id="97_compass"]
 [ext_resource type="Script" path="res://scripts/rocket_camera.gd" id="96_camera"]
+[ext_resource type="Script" path="res://scripts/legs_visual.gd" id="95_legs"]
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_a8c1y"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dar0e"]
@@ -596,14 +597,6 @@ scale = Vector2(0.03, 0.03)
 texture = ExtResource("5_nvpx3")
 flip_v = true
 
-[node name="RayCast2DLeft" type="RayCast2D" parent="Rocket"]
-position = Vector2(-14, -25)
-target_position = Vector2(0, 25)
-
-[node name="RayCast2DRight" type="RayCast2D" parent="Rocket"]
-position = Vector2(14, -25)
-target_position = Vector2(0, 25)
-
 [node name="center of mass" type="Node2D" parent="Rocket"]
 position = Vector2(0, -26)
 
@@ -613,6 +606,9 @@ script = ExtResource("96_camera")
 ignore_rotation = false
 rotation_smoothing_enabled = true
 rotation_smoothing_speed = 10.0
+
+[node name="Legs" type="Node2D" parent="Rocket"]
+script = ExtResource("95_legs")
 
 [node name="Sprite2D" type="Sprite2D" parent="Rocket"]
 position = Vector2(0, -40)

@@ -15,6 +15,7 @@ class SimpleLanding(GRL):
         rcs_right_thrust = 0
 
         action = {
+            "legs": 1,  # deploy the landing legs (needed to win; they add drag)
             "main_thrust": main_thrust,
             "rcs_left_thrust": rcs_left_thrust,
             "rcs_right_thrust": rcs_right_thrust,

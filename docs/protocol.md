@@ -21,12 +21,14 @@ A bare dict of inputs (no `"action"`) is still accepted and means `step` with `f
 
 ## Inputs
 `main_thrust`, `rcs_left_thrust`, `rcs_right_thrust`: float in `[0, 1]` (clamped; missing keys default to 0).
+`legs`: optional float in `[0, 1]`, latched (`>= 0.5` deploys, `< 0.5` retracts; omitted keeps the current state).
+Legs start retracted, take 0.8 s to deploy/retract and add linear/angular damping when deployed.
 
 ## State
 Vectors are `[x, y]` lists. Landing pad keys: `landing_pad_position` ([x, y] on the surface),
 `landing_pad_width`, `landing_pad_distance` (signed surface arc in px from the rocket to the pad centre, > 0 when
 the pad is to the rocket's local right) and `on_landing_pad`. The pad is placed randomly per level load
-(seeded by `set_seed`); "victory" requires a safe touchdown on it, a safe landing elsewhere does not end the episode. `planet_mass` is a scientific-notation string (e.g. `"2e24"`, too large for a JSON number
+(seeded by `set_seed`); "victory" requires resting on it with the legs deployed (both feet down, < 2 px/s for 0.5 s); a landing elsewhere does not end the episode. `planet_mass` is a scientific-notation string (e.g. `"2e24"`, too large for a JSON number
 in Godot's `Big` class); the Python client converts it to `float`.
 
 When the episode ended during the step, the same state also carries `"game_state": "victory" | "crash"`

@@ -34,6 +34,8 @@ func _ready() -> void:
 		set_process(false)
 		return
 	layer = 10
+	# Keep updating while the game is paused (scripted steps, landed screen)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	root = Control.new()
 	root.theme = C.build()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -149,6 +151,8 @@ func _build_vehicle_panel() -> void:
 		legs.add_child(lamp)
 		lamps[key] = lamp
 	box.add_child(legs)
+	_gauge(box, "gear", "LANDING GEAR")
+	_gauge(box, "settle", "SETTLE ON PAD")
 
 func _build_environment_panel() -> void:
 	var box := _panel("ENVIRONMENT", Control.PRESET_BOTTOM_LEFT, 176)
@@ -192,8 +196,8 @@ func _build_hint() -> void:
 	hint.offset_bottom = -10
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hint.text = "%s MAIN  %s RCS L  %s RCS R
-%s RESTART  %s MENU" % [
-		_key("ui_up"), _key("ui_right"), _key("ui_left"), _key("restart"), _key("echap")]
+%s GEAR  %s RESTART  %s MENU" % [
+		_key("ui_up"), _key("ui_right"), _key("ui_left"), _key("toggle_legs"), _key("restart"), _key("echap")]
 	root.add_child(hint)
 
 static func _key(action: String) -> String:
@@ -275,6 +279,12 @@ func _process(_delta: float) -> void:
 	for pair in [["main", "main_thrust"], ["rcs_l", "rcs_left_thrust"], ["rcs_r", "rcs_right_thrust"]]:
 		var v: float = inputs.get(pair[1], 0.0)
 		_gauge_set(pair[0], v, "%3.0f %%" % (v * 100.0), C.ACCENT)
+	var ext: float = rocket.legs_extension
+	var gear_text := "DEPLOYED" if ext >= 1.0 else ("RETRACTED" if ext <= 0.0 else
+		("DEPLOYING" if rocket.legs_deployed else "RETRACTING") + " %d%%" % int(ext * 100.0))
+	_gauge_set("gear", ext, gear_text, C.OK if ext >= 1.0 else C.ACCENT)
+	var settle: float = rocket.settle_time / rocket.SETTLE_TIME
+	_gauge_set("settle", settle, "%.2f / %.1f s" % [rocket.settle_time, rocket.SETTLE_TIME], C.OK if settle > 0.0 else C.TEXT_DIM)
 	lamps["leg_l"].on = rocket.left_leg_contact
 	lamps["leg_r"].on = rocket.right_leg_contact
 

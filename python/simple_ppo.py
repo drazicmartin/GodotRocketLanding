@@ -196,6 +196,7 @@ class CustomGRLGym(GRLGym):
         if self.action_space == spaces.Discrete(2):
             return {
                 "main_thrust": int(action),
+                "legs": 1,  # landing legs deployed (needed for a landing to count)
                 "rcs_left_thrust": 0, 
                 "rcs_right_thrust": 0
             }

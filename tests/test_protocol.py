@@ -37,6 +37,9 @@ def fake_state(frame, game_state=None):
         "landing_pad_width": 90.0,
         "landing_pad_distance": 300.0 - frame,
         "on_landing_pad": False,
+        "legs_deployed": True,
+        "legs_extension": 1.0,
+        "settle_time": 0.0,
     }
     if game_state:
         state["game_state"] = game_state
@@ -257,8 +260,8 @@ def test_info_keys_are_stable_and_actions_are_symmetric():
     assert set(info0) == set(info1) == set(info2)
     assert (info1["game_state"], info2["game_state"], info2["is_success"]) == ("running", "crash", False)
     assert terminated
-    assert env.decode_action(np.array([-1.0, 0.0, 1.0])) == {
-        "main_thrust": 0.0, "rcs_left_thrust": 0.5, "rcs_right_thrust": 1.0}
+    assert env.decode_action(np.array([-1.0, 0.0, 1.0, 1.0])) == {
+        "main_thrust": 0.0, "rcs_left_thrust": 0.5, "rcs_right_thrust": 1.0, "legs": 1.0}
 
 
 def test_config_file_is_written_and_passed(tmp_path, monkeypatch):

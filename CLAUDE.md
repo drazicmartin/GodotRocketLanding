@@ -78,6 +78,10 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
 - `scripts/Big.gd`: arbitrary-precision (mantissa/exponent) number class used for planet mass so gravity
   math doesn't overflow `float`/`int`; see `Settings.MASS_SCALE`/`DIST_SCALE`/`THRUST_SCALE` for the
   scale factors used to keep everything else in normal float range.
+- Landing legs (`rocket.gd` `update_legs`): spring struts probed with rays along the rocket's down axis,
+  deploy/retract animated over 0.8 s of simulation time (deterministic), drawn by `scripts/legs_visual.gd`.
+  Leg contact counts only when fully deployed. Victory = legs down + both feet in contact + on pad + settled
+  (< 2 px/s, < 0.1 rad/s) for 0.5 s; manual play pauses the tree on victory.
 - Launch config: `--config <file>` (Godot ConfigFile, read in `Settings._ready`; Python writes it via
   `grl/config.py`, `config=` on `GRL`/`GRLEnv`). Currently `[camera] zoom`. `scripts/rocket_camera.gd` applies
   `Settings.camera_zoom` and handles the mouse wheel.

@@ -157,7 +157,9 @@ class GRLEnv(GRLGym):
 
     Observation: position(2), linear_velocity(2), angular_velocity, rotation, propellant (0-100),
     left/right leg contact, landing_pad_distance (signed arc px to the pad). Victory requires touching down on
-    the randomly placed pad; a safe landing elsewhere does not end the episode. Action: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
+    the randomly placed pad with the legs deployed and staying still for 0.5 s; a landing elsewhere does not
+    end the episode. Action: Box(4) adds a 4th "legs" command (> 0 deploys, deployed legs add drag on speed
+    and rotation), legs_extension (0..1) is observed. Thrusters: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
     (a + 1) / 2 so -1 = off and 1 = full (symmetric bounds are what SB3/Tianshou/RLlib policies expect), or
     Discrete(2) (main engine off/on) with `discrete_actions=True`.
     Reward: shaped towards the pad (see `get_reward`), override it for your own shaping.
@@ -166,7 +168,7 @@ class GRLEnv(GRLGym):
 
     observation_space_names = [
         'position', 'linear_velocity', 'angular_velocity', 'rotation',
-        'propellant', 'left_leg_contact', 'right_leg_contact', 'landing_pad_distance',
+        'propellant', 'left_leg_contact', 'right_leg_contact', 'landing_pad_distance', 'legs_extension',
     ]
     observation_space_dict = {
         'position': {'low': [-np.inf] * 2, 'high': [np.inf] * 2},
@@ -178,6 +180,7 @@ class GRLEnv(GRLGym):
         'right_leg_contact': {'low': [0], 'high': [1]},
         # signed surface distance to the pad centre (px), > 0 when the pad is to the rocket's local right
         'landing_pad_distance': {'low': [-np.inf], 'high': [np.inf]},
+        'legs_extension': {'low': [0], 'high': [1]},
     }
 
     def __init__(self, discrete_actions=False, max_steps=1000, **kwargs):
@@ -189,13 +192,15 @@ class GRLEnv(GRLGym):
         if self.discrete_actions:
             self.action_space = spaces.Discrete(2)
         else:
-            self.action_space = spaces.Box(-1.0, 1.0, shape=(3,), dtype=np.float32)
+            # main, rcs_left, rcs_right, legs (> 0 deploys the landing legs)
+            self.action_space = spaces.Box(-1.0, 1.0, shape=(4,), dtype=np.float32)
         self.define_observation_space()
 
     def decode_action(self, action):
-        names = self.env.get_action_name()
+        names = self.env.get_action_name() + ["legs"]
         if self.discrete_actions:
-            return {names[0]: float(action), names[1]: 0.0, names[2]: 0.0}
+            # main engine only; legs kept deployed so a landing can count
+            return {names[0]: float(action), names[1]: 0.0, names[2]: 0.0, "legs": 1.0}
         return {name: float((np.clip(value, -1.0, 1.0) + 1.0) / 2.0) for name, value in zip(names, action)}
 
     def early_stop(self, obs, reward, done, truncation, state):

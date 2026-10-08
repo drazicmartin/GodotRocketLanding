@@ -33,6 +33,11 @@ func _ready():
 	Engine.max_fps = 0
 
 func _physics_process(delta: float) -> void:
+	# A player who has landed is done: stop the simulation and keep the TOUCHDOWN screen (restart / menu keys
+	# and the HUD keep working, they run while paused). Scripted runs end through the step protocol instead.
+	if Settings.control_mode == "manual" and Action.episode_result.get("game_state") == "victory":
+		get_tree().paused = true
+		return
 	if Settings.control_mode == "script" and step_pending:
 		# Runs at the start of a tick, before the rocket: `ticks_left` ticks have been simulated once it hits 0
 		# (or earlier if the episode ended), so pause and reply with a single message.

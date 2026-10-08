@@ -61,10 +61,25 @@ var animated_sprite = $AnimatedSprite2D
 # Scenes without a pad (e.g. debug) keep the old rule: any safe landing wins.
 @onready var landing_pad: Node2D = get_parent().get_node_or_null("LandingPad")
 
-@onready
-var raycast_left = $RayCast2DLeft
-@onready
-var raycast_right = $RayCast2DRight
+# ---- Landing legs: spring struts that deploy / retract (see update_legs) ----
+@export var legs_start_deployed := false
+const LEG_DEPLOY_TIME := 0.8          # s for a full deploy or retract animation
+const LEG_ANCHOR_Y := -12.0           # strut attachment height (rocket space, body bottom is y = 0)
+const LEG_ANCHOR_X_RETRACTED := 12.0
+const LEG_ANCHOR_X_DEPLOYED := 22.0
+const LEG_LENGTH := 24.0              # rest length when fully deployed: feet 12 px below the hull
+const LEG_STIFFNESS := 22.0           # spring constant per leg
+const LEG_DAMPING := 15.0             # damper per leg
+const LEG_LINEAR_DAMP := 0.3          # extra drag when deployed: harder to gain speed...
+const LEG_ANGULAR_DAMP := 2.5         # ...and to rotate
+# Landing is only won once the rocket rests on the pad: legs down, both feet in contact, nearly still.
+const SETTLE_SPEED := 2.0             # px/s
+const SETTLE_ANGULAR_SPEED := 0.1     # rad/s
+const SETTLE_TIME := 0.5              # s
+var legs_deployed := false            # commanded state
+var legs_extension := 0.0             # animated 0 (retracted) .. 1 (deployed)
+var leg_compression := [0.0, 0.0]     # px, left / right (for the visuals)
+var settle_time := 0.0                # s spent settled on the pad
 
 var integrity: float = 1
 @export var destructible: bool = true
@@ -123,6 +138,9 @@ func _ready() -> void:
 	# Set inital state
 	self.linear_velocity = initial_velocity * initial_direction
 	
+	legs_deployed = legs_start_deployed
+	legs_extension = 1.0 if legs_start_deployed else 0.0
+
 	# set Center of Mass
 	self.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
 	self.center_of_mass = obj_center_of_mass.position
@@ -217,6 +235,8 @@ func _physics_process(delta):
 		self.inputs['main_thrust'] = float(Input.is_action_pressed("ui_up"))
 		self.inputs['rcs_left_thrust'] = float(Input.is_action_pressed("ui_right"))
 		self.inputs['rcs_right_thrust'] = float(Input.is_action_pressed("ui_left"))
+		if Input.is_action_just_pressed("toggle_legs"):
+			legs_deployed = not legs_deployed
 		
 	# set Thruster at zero if no more propellant
 	self.inputs['main_thrust'] *= int(self.propellant > 0)
@@ -250,6 +270,8 @@ func _physics_process(delta):
 		left_thurster_particules.amount_ratio = self.inputs['rcs_left_thrust']
 		right_thurster_particules.amount_ratio = self.inputs['rcs_right_thrust']
 	
+	update_legs(delta)
+
 	if self.destructible:
 		apply_thermal_damage(delta)
 		apply_hull_stress_damage(delta)
@@ -264,10 +286,12 @@ func _physics_process(delta):
 	if self.integrity <= 0.0:
 		crash()
 	
-	if was_on_ground and is_on_ground() and not self.crashed and self.is_on_landing_pad():
+	if was_on_ground and not self.crashed and self.is_on_landing_pad() and is_settled():
+		settle_time += delta
+	else:
+		settle_time = 0.0
+	if settle_time >= SETTLE_TIME:
 		emit_signal("simulation_finished", {"game_state": "victory", "score": self.integrity})
-	elif was_on_ground and not is_on_ground():
-		start_time = Time.get_ticks_msec()
 	
 	if self.invinsible_start:
 		invinsible_step -= 1
@@ -288,6 +312,9 @@ func get_state():
 		'mass': self.mass,
 		'left_leg_contact': self.left_leg_contact,
 		'right_leg_contact': self.right_leg_contact,
+		'legs_deployed': self.legs_deployed,
+		'legs_extension': self.legs_extension,
+		'settle_time': self.settle_time,
 	}
 
 func sanitize_input(inputs: Dictionary) -> Dictionary:
@@ -301,10 +328,17 @@ func sanitize_input(inputs: Dictionary) -> Dictionary:
 	if inputs.has("rcs_right_thrust"):
 		new_inputs["rcs_right_thrust"] = clamp(inputs["rcs_right_thrust"], 0, 1)
 
+	if inputs.has("legs"):
+		new_inputs["legs"] = clamp(float(inputs["legs"]), 0, 1)
+
 	return new_inputs 
 
 func set_inputs(inputs: Dictionary):
 	inputs = self.sanitize_input(inputs)
+	# Legs are a latched command: steps that omit "legs" keep the current state.
+	if inputs.has("legs"):
+		legs_deployed = inputs["legs"] >= 0.5
+		inputs.erase("legs")
 	self.inputs = DEFAULT_INPUTS.duplicate()
 	for key in inputs:
 		self.inputs[key] = inputs[key]
@@ -327,11 +361,53 @@ func is_on_landing_pad() -> bool:
 	# Landing elsewhere is allowed (no damage, no end of episode): the rocket can lift off and hop to the pad.
 	return landing_pad == null or landing_pad.contains(self.position)
 
-# Function to check if the rocket is on the ground
+# Both feet on the ground (contacts are updated by update_legs every physics tick)
 func is_on_ground() -> bool:
-	self.left_leg_contact = raycast_left.is_colliding()
-	self.right_leg_contact = raycast_right.is_colliding()
 	return self.left_leg_contact and self.right_leg_contact
+
+func is_settled() -> bool:
+	return legs_extension >= 1.0 and self.linear_velocity.length() < SETTLE_SPEED 		and absf(self.angular_velocity) < SETTLE_ANGULAR_SPEED
+
+func leg_anchor(side: int) -> Vector2:
+	# side: -1 left, +1 right. The strut swings outward while deploying.
+	var x := lerpf(LEG_ANCHOR_X_RETRACTED, LEG_ANCHOR_X_DEPLOYED, legs_extension)
+	return Vector2(side * x, LEG_ANCHOR_Y)
+
+func update_legs(delta: float) -> void:
+	# Deploy / retract animation (simulation time, so it is deterministic and follows the step protocol)
+	var target := 1.0 if legs_deployed else 0.0
+	legs_extension = move_toward(legs_extension, target, delta / LEG_DEPLOY_TIME)
+	# Deployed legs catch air and add rotational inertia: more drag on speed and on rotation
+	self.linear_damp = LEG_LINEAR_DAMP * legs_extension
+	self.angular_damp = LEG_ANGULAR_DAMP * legs_extension
+
+	# Suspension: each leg is a spring along the rocket's "down" axis, probed with a ray
+	var rest := LEG_LENGTH * legs_extension
+	var down := Vector2(0, 1).rotated(self.rotation)
+	var space := get_world_2d().direct_space_state
+	var contacts := [false, false]
+	for i in 2:
+		var side := -1 if i == 0 else 1
+		var anchor := self.to_global(leg_anchor(side))
+		leg_compression[i] = 0.0
+		if rest <= 0.5:
+			continue
+		var query := PhysicsRayQueryParameters2D.create(anchor, anchor + down * (rest + 1.0), 1, [self.get_rid()])
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			continue
+		var dist: float = (hit.position - anchor).dot(down)
+		var compression := clampf(rest - dist, 0.0, rest)
+		leg_compression[i] = compression
+		contacts[i] = legs_extension >= 1.0
+		# velocity of the anchor point along "down" (positive = moving into the ground)
+		var point_velocity := self.linear_velocity + Vector2(-self.angular_velocity * (anchor - self.global_position).y,
+			self.angular_velocity * (anchor - self.global_position).x)
+		var force := LEG_STIFFNESS * compression + LEG_DAMPING * point_velocity.dot(down)
+		if force > 0.0:
+			apply_force(-down * force, anchor - self.global_position)
+	self.left_leg_contact = contacts[0]
+	self.right_leg_contact = contacts[1]
 
 func _on_body_entered(body: Node) -> void:
 	if not destructible:

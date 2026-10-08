@@ -59,7 +59,7 @@ end to end (short budgets) and launches one headless game per parallel env:
 | TorchRL | `examples/torchrl_ppo.py` | `pip install -e .[torchrl]` |
 | CleanRL / plain Gymnasium | `examples/gymnasium_cleanrl.py`, `python/simple_ppo.py` | `pip install -e .[train]` |
 
-Env contract: observation `Box(10,)` float32 (includes `landing_pad_distance`); action `Box(3,)` in `[-1, 1]` mapped to thrust `(a+1)/2`
+Env contract: observation `Box(11,)` float32 (includes `landing_pad_distance`, `legs_extension`); action `Box(4,)` in `[-1, 1]`: three thrusters mapped to `(a+1)/2` plus a landing-legs command (`> 0` deploys)
 (or `Discrete(2)` with `discrete_actions=True`); `info` has the full state plus `game_state`
 (`running`/`victory`/`crash`) and `is_success` on every step; `render_mode="human"` shows the game window;
 `port=None` (default) picks a free port. Sample Factory is not covered (no Windows support).
@@ -70,14 +70,18 @@ pip install -e . pytest && pytest   # client tests run against a fake server, no
 ```
 
 ### Rocket control
-You can control only 3 Thrusters
+3 thrusters and the landing legs (keyboard: arrows for thrust, `G` toggles the legs)
 ```python
 {
     "main_thrust"     : float(0-1),
     "rcs_left_thrust" : float(0-1),
-    "rcs_right_thrust": float(0-1)
+    "rcs_right_thrust": float(0-1),
+    "legs"            : float(0-1),  # optional, latched: >= 0.5 deploys, < 0.5 retracts
 }
 ```
+To win, touch down on the landing pad with the legs deployed and stay still (< 2 px/s) for 0.5 s.
+The legs are spring struts: they soften the touchdown but, when deployed, add drag (about 20 % less
+speed gained per second of thrust and 40 % less spin from the RCS).
 
 ### Rocket State
 Vectors are `[x, y]` lists. When an episode ends, the last state also contains `game_state` (`"victory"` or `"crash"`).
@@ -104,6 +108,9 @@ Vectors are `[x, y]` lists. When an episode ends, the last state also contains `
     'landing_pad_width': float,
     'landing_pad_distance': float,   # signed surface distance to the pad centre, > 0 = pad to the right
     'on_landing_pad': bool,
+    'legs_deployed': bool,           # commanded leg state
+    'legs_extension': float(0-1),    # deploy/retract animation progress (0.8 s)
+    'settle_time': float,            # s spent settled on the pad (victory at 0.5 s)
 }
 ```
 
