@@ -259,3 +259,23 @@ def test_info_keys_are_stable_and_actions_are_symmetric():
     assert terminated
     assert env.decode_action(np.array([-1.0, 0.0, 1.0])) == {
         "main_thrust": 0.0, "rcs_left_thrust": 0.5, "rcs_right_thrust": 1.0}
+
+
+def test_config_file_is_written_and_passed(tmp_path, monkeypatch):
+    from grl.config import resolve_config, write_config
+    from grl.process import GameProcess
+
+    path = write_config({"camera": {"zoom": 0.25}, "misc": {"name": "a b", "flag": True}}, tmp_path / "g.cfg")
+    assert path.read_text() == '[camera]\nzoom=0.25\n\n[misc]\nname="a b"\nflag=true\n'
+    assert resolve_config(path) == path
+
+    launched = {}
+    monkeypatch.setattr("subprocess.Popen", lambda cmd, cwd=None: launched.setdefault("cmd", cmd))
+    fake = tmp_path / "game.bin"
+    fake.write_text("")
+    game = GameProcess(1234, binary=fake, config={"camera": {"zoom": 0.5}})
+    game.start()
+    game.proc = None  # nothing real to terminate at exit
+    cmd = launched["cmd"]
+    cfg = Path(cmd[cmd.index("--config") + 1])
+    assert "zoom=0.5" in cfg.read_text()

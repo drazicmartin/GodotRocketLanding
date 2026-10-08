@@ -23,6 +23,7 @@ var banner_detail: Label
 var top_level: Label
 var top_time: Label
 var top_mode: Label
+var top_zoom: Label
 var top_link: Label
 var hint: Label
 
@@ -98,9 +99,10 @@ func _build_top_bar() -> void:
 	top_level = C.label("", 12, C.ACCENT)
 	top_time = C.label("", 12)
 	top_mode = C.label("", 12)
+	top_zoom = C.label("", 12)
 	top_link = C.label("", 12)
 	top_level.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for l in [top_level, top_time, top_mode, top_link]:
+	for l in [top_level, top_time, top_zoom, top_mode, top_link]:
 		row.add_child(l)
 
 func _build_flight_panel() -> void:
@@ -219,6 +221,7 @@ func _process(_delta: float) -> void:
 	top_level.text = "GRL // " + get_tree().current_scene.scene_file_path.get_file().get_basename().to_upper()
 	top_time.text = "T+ %07.2f s" % (rocket.num_frame_computed / tps)
 	top_mode.text = "MODE " + Settings.control_mode.to_upper()
+	top_zoom.text = "ZOOM x%.2f" % rocket.get_node("Camera2D").zoom.x
 	var peers: int = WebSocketServer.peers.size()
 	if peers > 0:
 		top_link.text = "LINK ● %d CLIENT%s" % [peers, "" if peers == 1 else "S"]

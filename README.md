@@ -34,6 +34,18 @@ The binary is looked up in `$GRL_BINARY`, the repo root, then the current direct
 (override `get_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
 `python/` still work and import through `python/utils.py`.
 
+### Launch config (camera zoom, ...)
+The camera starts fully zoomed out (x0.10) and zooms with the mouse wheel in flight or the menu slider
+(range x0.10 to x2.00). To set it from Python when the game is launched, pass a config, either a dict or a
+path to an INI file (Godot `ConfigFile`), which is handed to the game with `--config`:
+```python
+env = gym.make("GRL/Landing-v0", show_window=True, config={"camera": {"zoom": 0.5}})
+# or GRL(config="my_settings.cfg"), with my_settings.cfg containing:
+# [camera]
+# zoom=0.5
+```
+The same file works when starting the game by hand: `GRL.exe --config my_settings.cfg`.
+
 ### RL frameworks
 `GRLEnv` is a standard Gymnasium env, so any Gymnasium-compatible library works. Each example below was run
 end to end (short budgets) and launches one headless game per parallel env:

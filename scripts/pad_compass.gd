@@ -11,6 +11,7 @@ const ON_PAD := Color(0.35, 1.0, 0.6)
 
 @onready var rocket: RigidBody2D = get_parent().get_node("Rocket")
 @onready var pad: Node2D = get_parent().get_node_or_null("LandingPad")
+@onready var camera: Camera2D = rocket.get_node("Camera2D")
 
 var centre_offset := Vector2(0, -40)   # sprite centre in rocket space (same offset as the rocket sprite)
 
@@ -23,6 +24,8 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	global_position = rocket.global_position + centre_offset.rotated(rocket.rotation)
+	# Same size on screen at every zoom level
+	scale = Vector2.ONE / camera.zoom.x
 	queue_redraw()
 
 func _draw() -> void:

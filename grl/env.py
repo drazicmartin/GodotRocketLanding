@@ -19,6 +19,7 @@ class GRLGym(gym.Env):
             frame_skip=1,
             binary=None,
             render_mode=None,
+            config=None,
         ):
         super().__init__()
         # Gymnasium convention: render_mode="human" means "show the game window" (Godot renders it itself).
@@ -28,7 +29,7 @@ class GRLGym(gym.Env):
 
         # Initialize the Godot environment. port=None picks a free port, so frameworks that create envs on
         # their own (SB3 SubprocVecEnv, RLlib workers, ...) never collide; an explicit port is offset by idx.
-        self.env = GRL(port=None if port is None else port + idx, binary=binary)
+        self.env = GRL(port=None if port is None else port + idx, binary=binary, config=config)
         self.show_window = show_window if idx == 0 else False
 
         self.setup_observation_space()

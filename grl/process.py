@@ -5,7 +5,9 @@ import platform
 import socket
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Mapping, Optional
+
+from .config import ConfigLike, resolve_config
 
 BINARY_ENV_VAR = "GRL_BINARY"
 
@@ -37,11 +39,13 @@ class GameProcess:
     """Owns the game subprocess so it can be terminated (also at interpreter exit)."""
 
     def __init__(self, port: int, show_window: bool = False, debug: bool = False,
-                 binary: Optional[os.PathLike] = None):
+                 binary: Optional[os.PathLike] = None, config: Optional["ConfigLike"] = None):
         self.port = port
         self.binary = Path(binary) if binary else find_binary()
         self.show_window = show_window
         self.debug = debug
+        self.config = config
+        self._temp_config: Optional[Path] = None  # written from a dict, deleted on terminate
         self.proc: Optional[subprocess.Popen] = None
 
     def start(self) -> None:
@@ -53,6 +57,11 @@ class GameProcess:
             cmd += ["--fixed-fps", "30"]
         if self.debug:
             cmd.append("--debug")
+        if self.config is not None:
+            path = resolve_config(self.config)
+            if isinstance(self.config, Mapping):
+                self._temp_config = path
+            cmd += ["--config", str(path.resolve())]
         # Run from the binary's folder: the .pck sits next to it.
         self.proc = subprocess.Popen(cmd, cwd=self.binary.parent)
         atexit.register(self.terminate)
@@ -65,3 +74,6 @@ class GameProcess:
             except subprocess.TimeoutExpired:
                 self.proc.kill()
         self.proc = None
+        if self._temp_config is not None:
+            self._temp_config.unlink(missing_ok=True)
+            self._temp_config = None

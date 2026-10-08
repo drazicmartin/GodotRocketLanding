@@ -14,6 +14,8 @@ var port_error := ""
 var status_values := {}
 var mode_manual: Button
 var mode_script: Button
+var zoom_slider: HSlider
+var zoom_value: Label
 
 func _ready():
 	theme = C.build()
@@ -107,6 +109,28 @@ func _build() -> void:
 	mode_script.pressed.connect(_set_mode.bind("script"))
 	link.add_child(modes)
 
+	# camera zoom: slider position is logarithmic between Settings.ZOOM_MIN and ZOOM_MAX
+	var zoom_head := HBoxContainer.new()
+	var zl := C.label("CAMERA ZOOM", 10, C.TEXT_DIM)
+	zl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	zoom_value = C.label("", 11, C.ACCENT)
+	zoom_head.add_child(zl)
+	zoom_head.add_child(zoom_value)
+	link.add_child(zoom_head)
+	zoom_slider = HSlider.new()
+	zoom_slider.min_value = 0.0
+	zoom_slider.max_value = 1.0
+	zoom_slider.step = 0.001
+	zoom_slider.value = log(Settings.camera_zoom / Settings.ZOOM_MIN) / log(Settings.ZOOM_MAX / Settings.ZOOM_MIN)
+	zoom_slider.value_changed.connect(func(v): Settings.camera_zoom = Settings.ZOOM_MIN * pow(Settings.ZOOM_MAX / Settings.ZOOM_MIN, v))
+	link.add_child(zoom_slider)
+	var hint := C.label("MOUSE WHEEL ZOOMS IN FLIGHT", 9, C.TEXT_DIM)
+	link.add_child(hint)
+	if Settings.config_path != "":
+		var cfg := C.label("CONFIG " + Settings.config_path.get_file(), 9, C.TEXT_DIM)
+		cfg.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		link.add_child(cfg)
+
 	var exit := Button.new()
 	exit.text = "EXIT"
 	exit.custom_minimum_size = Vector2(120, 30)
@@ -135,6 +159,7 @@ func _process(_delta: float) -> void:
 	var peers: int = WebSocketServer.peers.size()
 	_status("CLIENTS", str(peers), C.OK if peers > 0 else C.TEXT)
 	_status("PROTOCOL", "v%d" % Settings.PROTOCOL_VERSION)
+	zoom_value.text = "x%.2f" % Settings.camera_zoom
 	var v := Engine.get_version_info()
 	_status("ENGINE", "GODOT %d.%d.%d" % [v.major, v.minor, v.patch])
 

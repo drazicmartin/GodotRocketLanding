@@ -21,6 +21,7 @@ class GRL:
             port: Optional[int] = 65000,
             debug: bool = False,
             binary: Optional[os.PathLike] = None,
+            config=None,
         ):
         # port=None picks a free port, which avoids collisions between parallel instances.
         self.port = find_free_port() if port is None else int(port)
@@ -28,6 +29,8 @@ class GRL:
         self.websocket = None
         self.debug = debug
         self.binary = binary
+        # Launch config (dict {section: {key: value}} or path to a .cfg file), see grl/config.py
+        self.config = config
         self.game: Optional[GameProcess] = None
 
         try:
@@ -133,7 +136,8 @@ class GRL:
                 break
 
     def start_game(self, show_window=False):
-        self.game = GameProcess(self.port, show_window=show_window, debug=self.debug, binary=self.binary)
+        self.game = GameProcess(self.port, show_window=show_window, debug=self.debug, binary=self.binary,
+                                config=self.config)
         self.game.start()
 
     @abstractmethod

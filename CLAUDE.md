@@ -78,6 +78,9 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
 - `scripts/Big.gd`: arbitrary-precision (mantissa/exponent) number class used for planet mass so gravity
   math doesn't overflow `float`/`int`; see `Settings.MASS_SCALE`/`DIST_SCALE`/`THRUST_SCALE` for the
   scale factors used to keep everything else in normal float range.
+- Launch config: `--config <file>` (Godot ConfigFile, read in `Settings._ready`; Python writes it via
+  `grl/config.py`, `config=` on `GRL`/`GRLEnv`). Currently `[camera] zoom`. `scripts/rocket_camera.gd` applies
+  `Settings.camera_zoom` and handles the mouse wheel.
 - UI: `scripts/ui_theme.gd` (shared theme), `scripts/hud.gd` (flight HUD, a `CanvasLayer` in `main.tscn`)
   and `scripts/main_menu.gd` build their UI in code. Every HUD value must come from live simulation state
   (rocket/planet/wind/actions/server), never placeholders; units are simulation px. The HUD disables itself

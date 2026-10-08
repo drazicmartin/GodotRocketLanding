@@ -1,4 +1,4 @@
-[gd_scene load_steps=82 format=3 uid="uid://b6xvofyoblwm4"]
+[gd_scene load_steps=83 format=3 uid="uid://b6xvofyoblwm4"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_i4qmn"]
 [ext_resource type="Script" path="res://scripts/rocket.gd" id="2_fbuok"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/hud.gd" id="99_hud"]
 [ext_resource type="Script" path="res://scripts/landing_pad.gd" id="98_pad"]
 [ext_resource type="Script" path="res://scripts/pad_compass.gd" id="97_compass"]
+[ext_resource type="Script" path="res://scripts/rocket_camera.gd" id="96_camera"]
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_a8c1y"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dar0e"]
@@ -608,6 +609,7 @@ position = Vector2(0, -26)
 
 [node name="Camera2D" type="Camera2D" parent="Rocket"]
 position = Vector2(0, -40)
+script = ExtResource("96_camera")
 ignore_rotation = false
 rotation_smoothing_enabled = true
 rotation_smoothing_speed = 100.0
