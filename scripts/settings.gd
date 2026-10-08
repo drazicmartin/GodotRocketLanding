@@ -15,7 +15,7 @@ var launched_by_client: bool = "-p" in OS.get_cmdline_args() or "--port" in OS.g
 
 # Camera zoom (Godot Camera2D zoom factor: < 1 shows more of the world). Starts fully zoomed out; changed with
 # the mouse wheel in flight, the menu slider, or a launch config file (see load_config).
-const ZOOM_MIN := 0.1
+const ZOOM_MIN := 0.4
 const ZOOM_MAX := 2.0
 var camera_zoom: float = ZOOM_MIN:
 	set(value):
@@ -33,7 +33,7 @@ func _ready() -> void:
 func load_config(path: String) -> void:
 	# INI-style file (Godot ConfigFile), e.g. written by the Python client:
 	#   [camera]
-	#   zoom=0.25
+	#   zoom=0.6
 	var cfg := ConfigFile.new()
 	var err := cfg.load(path)
 	if err != OK:

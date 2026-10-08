@@ -12,7 +12,18 @@ func _ready() -> void:
 	if bg != null:
 		bg.follow_viewport_enabled = false
 		bg.scroll_ignore_camera_zoom = true
+		for layer in bg.get_children():
+			if layer is ParallaxLayer:
+				_tile_forever(layer)
 	_apply()
+
+static func _tile_forever(layer: ParallaxLayer) -> void:
+	# Repeat the layer's sprite edge to edge in both directions: the mirroring interval must be the sprite's
+	# exact on-layer size (some levels used a larger interval, which left gaps between copies).
+	for child in layer.get_children():
+		if child is Sprite2D and child.texture != null:
+			layer.motion_mirroring = child.texture.get_size() * child.scale.abs()
+			return
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

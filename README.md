@@ -35,8 +35,8 @@ The binary is looked up in `$GRL_BINARY`, the repo root, then the current direct
 `python/` still work and import through `python/utils.py`.
 
 ### Launch config (camera zoom, ...)
-The camera starts fully zoomed out (x0.10) and zooms with the mouse wheel in flight or the menu slider
-(range x0.10 to x2.00). To set it from Python when the game is launched, pass a config, either a dict or a
+The camera starts fully zoomed out (x0.40) and zooms with the mouse wheel in flight or the menu slider
+(range x0.40 to x2.00). To set it from Python when the game is launched, pass a config, either a dict or a
 path to an INI file (Godot `ConfigFile`), which is handed to the game with `--config`:
 ```python
 env = gym.make("GRL/Landing-v0", show_window=True, config={"camera": {"zoom": 0.5}})

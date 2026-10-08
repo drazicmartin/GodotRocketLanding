@@ -1,11 +1,11 @@
 """Game launch config: an INI file (Godot ConfigFile) passed to the game with --config.
 
 Example (dict form, as accepted by GRL/GRLEnv `config=`):
-    {"camera": {"zoom": 0.25}}
+    {"camera": {"zoom": 0.6}}
 
 Keys read by the game (scripts/settings.gd):
-    [camera] zoom  - Camera2D zoom factor, clamped to [0.1, 2.0]; < 1 shows more of the world.
-                     Default 0.1 (fully zoomed out).
+    [camera] zoom  - Camera2D zoom factor, clamped to [0.4, 2.0]; < 1 shows more of the world.
+                     Default 0.4 (fully zoomed out).
 """
 import json
 import os
