@@ -290,7 +290,7 @@ func _process(_delta: float) -> void:
 	else:
 		# direction in the same local frame as the attitude indicator (x: horizontal, y: down = toward ground)
 		var wd: Vector2 = wind.wind_direction
-		_show("wind", "%.0f %s" % [wind.wind_force, _arrow(Vector2(wd.dot(right), -wd.dot(up)))])
+		_show("wind", "%.1f %s" % [wind.wind_force, _arrow(Vector2(wd.dot(right), -wd.dot(up)))])
 
 	# outcome
 	var result: Dictionary = actions.episode_result

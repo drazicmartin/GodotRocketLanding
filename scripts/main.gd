@@ -28,7 +28,9 @@ func _ready():
 		Settings.debug = true
 	
 	Engine.time_scale = 1.0
-	Engine.max_fps = 60
+	# No frame cap: V-Sync paces windowed rendering, so high-refresh monitors are not held at 60 FPS.
+	# Headless runs are paced by --fixed-fps / the step protocol.
+	Engine.max_fps = 0
 
 func _physics_process(delta: float) -> void:
 	if Settings.control_mode == "script" and step_pending:

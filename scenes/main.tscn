@@ -612,7 +612,7 @@ position = Vector2(0, -40)
 script = ExtResource("96_camera")
 ignore_rotation = false
 rotation_smoothing_enabled = true
-rotation_smoothing_speed = 100.0
+rotation_smoothing_speed = 10.0
 
 [node name="Sprite2D" type="Sprite2D" parent="Rocket"]
 position = Vector2(0, -40)
@@ -625,7 +625,7 @@ script = ExtResource("99_hud")
 [node name="LandingPad" type="Node2D" parent="."]
 script = ExtResource("98_pad")
 
-[node name="PadCompass" type="Node2D" parent="."]
+[node name="PadCompass" type="Node2D" parent="Rocket"]
 script = ExtResource("97_compass")
 
 [connection signal="body_entered" from="Rocket" to="Rocket" method="_on_body_entered"]

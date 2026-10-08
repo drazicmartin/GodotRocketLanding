@@ -9,8 +9,10 @@ const BASE := Color(0.25, 0.95, 1.0, 0.12)
 const LIT := Color(0.25, 0.95, 1.0)
 const ON_PAD := Color(0.35, 1.0, 0.6)
 
-@onready var rocket: RigidBody2D = get_parent().get_node("Rocket")
-@onready var pad: Node2D = get_parent().get_node_or_null("LandingPad")
+# Child of the Rocket so it moves in the same frame as the rocket sprite; its own rotation cancels the
+# rocket's so the ring stays aligned with the world.
+@onready var rocket: RigidBody2D = get_parent()
+@onready var pad: Node2D = rocket.get_parent().get_node_or_null("LandingPad")
 @onready var camera: Camera2D = rocket.get_node("Camera2D")
 
 var centre_offset := Vector2(0, -40)   # sprite centre in rocket space (same offset as the rocket sprite)
@@ -22,14 +24,17 @@ func _ready() -> void:
 		return
 	z_index = 5
 
+func _physics_process(_delta: float) -> void:
+	position = centre_offset
+	rotation = -rocket.rotation
+
 func _process(_delta: float) -> void:
-	global_position = rocket.global_position + centre_offset.rotated(rocket.rotation)
 	# Same size on screen at every zoom level
 	scale = Vector2.ONE / camera.zoom.x
 	queue_redraw()
 
 func _draw() -> void:
-	var to_pad: Vector2 = pad.global_position - global_position
+	var to_pad: Vector2 = pad.global_position - rocket.global_position
 	var heading := to_pad.angle()
 	var on_pad: bool = pad.contains(rocket.position)
 	var step := TAU / SEGMENTS

@@ -52,6 +52,10 @@ echap={
 ]
 }
 
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+
 [physics]
 
 common/max_physics_steps_per_frame=30
