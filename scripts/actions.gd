@@ -5,6 +5,8 @@ var peer_id = null
 signal request_state(peer_id:int)
 
 func _ready():
+	if WorldModelBridge.enabled:
+		return
 	# Connect signals to this scene using Callable
 	WebSocketServer.connect("message_received", Callable(self, "_on_message_received"))
 	WebSocketServer.connect("client_connected", Callable(self, "_on_client_connected"))
@@ -57,6 +59,8 @@ func quit():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	if WorldModelBridge.enabled:
+		return
 	if Input.is_action_pressed("restart"):
 		self.restart_level()
 	if Input.is_action_pressed("echap"):
@@ -81,6 +85,8 @@ func _on_client_disconnected(peer_id: int):
 	self.peer_id = null
 
 func _on_rocket_simulation_finished(state: Dictionary) -> void:
+	if WorldModelBridge.enabled:
+		return
 	var json_response = JSON.stringify(state)
 	if self.peer_id != null:
 		WebSocketServer.send(self.peer_id, json_response)

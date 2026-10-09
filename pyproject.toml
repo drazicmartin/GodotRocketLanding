@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "godot-rocket-landing"
+version = "0.1.0"
+description = "Synchronous Godot RGB environment for Gymnasium and world_model"
+requires-python = ">=3.10"
+dependencies = ["gymnasium>=1.1,<2", "numpy>=1.26,<3", "websockets>=14,<18"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["simulator: requires Godot 4.3 and a rendering display"]

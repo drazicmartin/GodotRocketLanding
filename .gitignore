@@ -16,3 +16,10 @@ __pycache__/
 runs/
 GRL.*.TMPs
 debug/
+
+# Python package / training outputs
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+data/

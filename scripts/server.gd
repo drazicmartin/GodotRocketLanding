@@ -38,9 +38,9 @@ var pending_peers: Array[PendingPeer] = []
 var peers: Dictionary
 
 
-func listen(port: int) -> int:
+func listen(port: int, bind_address: String = "*") -> int:
 	assert(not tcp_server.is_listening())
-	return tcp_server.listen(port)
+	return tcp_server.listen(port, bind_address)
 
 
 func stop() -> void:
@@ -87,6 +87,8 @@ func has_message(peer_id: int) -> bool:
 
 func _create_peer() -> WebSocketPeer:
 	var ws := WebSocketPeer.new()
+	# RGB responses can exceed the default 64 KiB outbound buffer.
+	ws.outbound_buffer_size = 4 * 1024 * 1024
 	ws.supported_protocols = supported_protocols
 	ws.handshake_headers = handshake_headers
 	return ws
@@ -99,6 +101,9 @@ func poll() -> void:
 	while not refuse_new_connections and tcp_server.is_connection_available():
 		var conn: StreamPeerTCP = tcp_server.take_connection()
 		assert(conn != null)
+		# Disable Nagle's algorithm: this protocol is one small JSON message per physics
+		# step, so batching for fewer packets only adds latency (godotengine/godot#86234).
+		conn.set_no_delay(true)
 		pending_peers.append(PendingPeer.new(conn))
 
 	var to_remove := []

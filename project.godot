@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 WebSocketServer="*res://scenes/server.tscn"
 Settings="*res://scripts/settings.gd"
+WorldModelBridge="*res://scripts/world_model_bridge.gd"
 
 [display]
 

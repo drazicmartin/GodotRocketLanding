@@ -1,0 +1,30 @@
+{
+  "env_id": "GodotRocketLanding-v0",
+  "max_steps": 40,
+  "episodes": 8,
+  "epochs": 2,
+  "action_repeat": 1,
+  "image_size": 32,
+  "dim": 48,
+  "encoder_depth": 1,
+  "encoder_heads": 3,
+  "patch_size": 8,
+  "predictor_depth": 1,
+  "predictor_heads": 2,
+  "predictor_head_dim": 24,
+  "mlp_dim": 96,
+  "sigreg_projections": 16,
+  "batch_size": 8,
+  "horizon": 3,
+  "population": 16,
+  "elites": 4,
+  "iterations": 2,
+  "candidate_chunk": 16,
+  "factory": "godot_rocket_landing:make_env",
+  "env_kwargs": {
+    "level_name": "random_level_easy",
+    "image_size": 64,
+    "max_episode_steps": 40
+  },
+  "validation_fraction": 0.25
+}

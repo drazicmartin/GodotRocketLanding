@@ -14,6 +14,8 @@ var Wind: Node2D = %WindSystem
 var Action = $Actions
 
 func _ready():
+	if WorldModelBridge.enabled:
+		return
 	# Connect signals to this scene using Callable
 	WebSocketServer.connect("message_received", Callable(self, "_on_message_received"))
 	WebSocketServer.connect("client_connected", Callable(self, "_on_client_connected"))
@@ -33,6 +35,8 @@ func _ready():
 	Engine.max_fps = 60
 
 func _physics_process(delta: float) -> void:
+	if WorldModelBridge.enabled:
+		return
 	if Settings.control_mode == "script":
 		if run_once:
 			get_tree().paused = true

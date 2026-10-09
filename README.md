@@ -7,6 +7,12 @@ A simple programmable rocket landing environment
 
 In 2147, Earth’s orbital elevators collapsed during a solar storm, severing all high-bandwidth connections to Mars. With a fleet of 1,000 automated rockets en route, each carrying critical resources, manual control from Earth became impossible. Only a narrow data channel remains, just enough to send one final program. You must design a landing algorithm capable of autonomously guiding every rocket through Mars atmosphere, without a single mistake. **Failure isn’t an option. One mistake, and years of progress would crash and burn.**
 
+## World model / Gymnasium RGB integration
+
+See [the pixel environment guide](docs/world-model.md) for installation, seeded
+reset/step/render, data collection, training, evaluation, and inference. This
+source-based integration uses Godot 4.3 and the `dev` scenes.
+
 ## Usage
 
 ### Python usage

@@ -1,0 +1,163 @@
+{
+  "upstream_branch": "dev",
+  "tested_source_commit": "28955706a4e5e69a65f23022bbaee3993d2fb13e",
+  "world_model_commit": "15fe31cae13b5970fb680da4768384e84e517e3c",
+  "platform": "Linux x86_64",
+  "godot": "4.3.stable.official.77dcf97d8",
+  "python": "3.12.14",
+  "renderer": "Mesa llvmpipe OpenGL compatibility under Xvfb",
+  "tests": {
+    "passed": 6,
+    "coverage": [
+      "seeded state and RGB repeatability at 64 and 128 pixels",
+      "one physics tick per action",
+      "current-action response alignment",
+      "natural terminal and reset",
+      "termination versus truncation",
+      "child process cleanup"
+    ]
+  },
+  "smoke": {
+    "config": {
+      "env_id": "GodotRocketLanding-v0",
+      "factory": "godot_rocket_landing:make_env",
+      "env_kwargs": {
+        "level_name": "random_level_easy",
+        "image_size": 64,
+        "max_episode_steps": 40
+      },
+      "image_size": 32,
+      "history": 3,
+      "dim": 48,
+      "encoder_depth": 1,
+      "encoder_heads": 3,
+      "patch_size": 8,
+      "predictor_depth": 1,
+      "predictor_heads": 2,
+      "predictor_head_dim": 24,
+      "mlp_dim": 96,
+      "sigreg_weight": 0.09,
+      "sigreg_projections": 16,
+      "batch_size": 8,
+      "epochs": 2,
+      "lr": 5e-05,
+      "weight_decay": 0.001,
+      "workers": 0,
+      "seed": 42,
+      "episodes": 8,
+      "max_steps": 40,
+      "action_repeat": 1,
+      "validation_fraction": 0.25,
+      "horizon": 3,
+      "population": 16,
+      "elites": 4,
+      "iterations": 2,
+      "discount": 0.99,
+      "smoothing": 0.1,
+      "min_std": 0.05,
+      "candidate_chunk": 16
+    },
+    "dataset": {
+      "episodes": 8,
+      "steps": 320
+    },
+    "model_eval": {
+      "windows": 10,
+      "horizon": 3,
+      "latent_mse_by_step": [
+        0.08444730639457702,
+        0.11357518285512924,
+        0.10173550620675087
+      ],
+      "reward_rmse_by_step": [
+        0.05371952971564216,
+        0.0521596511212157,
+        0.04709690748478833
+      ],
+      "termination_brier_by_step": [
+        0.27061630307867546,
+        0.2693512707874287,
+        0.262813302219033
+      ]
+    },
+    "mpc_eval": {
+      "policy": "cem",
+      "checkpoint": "grl-smoke-final/run/best.pt",
+      "planner": {
+        "horizon": 3,
+        "population": 16,
+        "iterations": 2
+      },
+      "episodes": [
+        {
+          "seed": 100000,
+          "return": -7.616122671139542,
+          "steps": 40,
+          "terminated": false,
+          "truncated": true,
+          "mean_action_seconds": 0.007923062299998663
+        },
+        {
+          "seed": 100001,
+          "return": -13.99275121737495,
+          "steps": 40,
+          "terminated": false,
+          "truncated": true,
+          "mean_action_seconds": 0.007009649575002186
+        }
+      ],
+      "mean_return": -10.804436944257246,
+      "std_return": 3.1883142731177037,
+      "standard_error": 3.1883142731177037
+    },
+    "random_eval": {
+      "policy": "random",
+      "checkpoint": "grl-smoke-final/run/best.pt",
+      "planner": {
+        "horizon": 3,
+        "population": 16,
+        "iterations": 2
+      },
+      "episodes": [
+        {
+          "seed": 100000,
+          "return": -7.2912543545937805,
+          "steps": 40,
+          "terminated": false,
+          "truncated": true,
+          "mean_action_seconds": 0.00012397480000032602
+        },
+        {
+          "seed": 100001,
+          "return": -12.926456633454865,
+          "steps": 40,
+          "terminated": false,
+          "truncated": true,
+          "mean_action_seconds": 0.00012374667500409943
+        }
+      ],
+      "mean_return": -10.108855494024322,
+      "std_return": 2.8176011394305425,
+      "standard_error": 2.817601139430542
+    },
+    "inference": {
+      "action": [
+        0.8435251116752625,
+        0.08084231615066528,
+        0.5004459023475647
+      ],
+      "action_valid": true,
+      "terminated": false,
+      "truncated": false
+    },
+    "elapsed_seconds": 23.844100139000005
+  },
+  "limitations": [
+    "Smoke pipeline validation only; no trained landing performance claimed.",
+    "Windows/macOS execution not tested.",
+    "Upstream victory/crash semantics preserved.",
+    "Cross-platform bitwise physics reproducibility not claimed."
+  ],
+  "rebased_onto_dev_commit": "a4905661167a1cb3120f8dd12cf2130972be01ba",
+  "post_rebase_tests_passed": 6
+}

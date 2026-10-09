@@ -1,0 +1,15 @@
+{
+  "env_id": "GodotRocketLanding-v0",
+  "factory": "godot_rocket_landing:make_env",
+  "env_kwargs": {
+    "level_name": "random_level_easy",
+    "image_size": 128,
+    "max_episode_steps": 900
+  },
+  "image_size": 64,
+  "history": 4,
+  "action_repeat": 3,
+  "max_steps": 300,
+  "episodes": 500,
+  "epochs": 100
+}

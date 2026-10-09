@@ -7,6 +7,8 @@ var global_peer_id = null
 
 # In the script of the new scene (e.g., main_menu.gd)
 func _ready():
+	if WorldModelBridge.enabled:
+		return
 	# Connect signals to this scene using Callable
 	WebSocketServer.connect("message_received", Callable(self, "_on_message_received"))
 	WebSocketServer.connect("client_connected", Callable(self, "_on_client_connected"))
