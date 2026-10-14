@@ -234,6 +234,17 @@ def test_default_env_terminates_with_crash_reward():
     assert terminated and not truncated and reward == -100.0 and info["game_state"] == "crash"
 
 
+def test_default_reward_is_the_change_of_potential():
+    port = start_in_thread(FakeGame(crash_after=10))
+    env = FakeLandingEnv(port=port)
+    env.reset()
+    before = env.potential(env.last_state)
+    _, reward, *_ = env.step(np.zeros(4, dtype=np.float32))
+    after = env.potential(env.last_state)
+    # the fake rocket moves 1 px towards the pad per frame, nothing else changes
+    assert reward == pytest.approx(after - before) and reward > 0
+
+
 def test_registered_id():
     import gymnasium as gym
 

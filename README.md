@@ -34,6 +34,14 @@ The binary is looked up in `$GRL_BINARY`, the repo root, then the current direct
 (override `get_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
 `python/` still work and import through `python/utils.py`.
 
+Actions are `Box(4)` in `[-1, 1]` (main engine, left RCS, right RCS, legs `> 0` deploys), mapped to thrust
+`(a + 1) / 2`. The engine is strong: on `random_level_easy` hovering takes about 18 % main thrust (action
+-0.63) with a full tank and 12 % with half of it, so action 0 (50 %) climbs at about 1.7 g. The default reward
+is +100 for a landing, -100 for a crash and otherwise the change of `GRLEnv.potential` (closer to the pad,
+slower, upright, intact, legs down low over the pad), as in Gymnasium's LunarLander: progress pays on the step
+it is made, so agents and planners with a short horizon still see the way to the pad. Its weights are
+`GRLEnv.reward_weights`.
+
 ### Pixels (`render_mode="rgb_array"`)
 The game launched by Python runs headless, so `render_mode="rgb_array"` frames are drawn in Python from the
 state the game replies with (`grl/render.py`): the same state always gives the same image, and it works on

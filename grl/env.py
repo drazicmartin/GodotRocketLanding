@@ -1,10 +1,12 @@
 import asyncio
+import math
 
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
 from .client import GRL
+from .policies import FOOT_ALTITUDE, local_frame
 
 
 class GRLGym(gym.Env):
@@ -198,7 +200,8 @@ class GRLEnv(GRLGym):
     thrust and 40 % RCS), legs_extension (0..1) is observed. Thrusters: Box(3) in [-1, 1] for (main, rcs_left, rcs_right), mapped to thrust
     (a + 1) / 2 so -1 = off and 1 = full (symmetric bounds are what SB3/Tianshou/RLlib policies expect), or
     Discrete(2) (main engine off/on) with `discrete_actions=True`.
-    Reward: shaped towards the pad (see `get_reward`), override it for your own shaping.
+    Reward: +100 for a landing, -100 for a crash, otherwise the change of `potential` (see `get_reward`);
+    override `get_reward` for your own shaping.
     Episodes end on "victory"/"crash" (terminated) or after `max_steps` ticks (truncated).
     """
 
@@ -244,15 +247,42 @@ class GRLEnv(GRLGym):
             truncation = True
         return done, truncation
 
+    # Potential weights: per px of distance to the pad, per px/s of speed, per rad of tilt from the local
+    # vertical, per unit of hull integrity, and the bonus for deployed legs low over the pad.
+    reward_weights = {"distance": 0.1, "speed": 0.03, "tilt": 10.0, "integrity": 50.0, "legs": 10.0}
+
+    def potential(self, state) -> float:
+        """How good `state` is: close to the pad, slow, upright, intact, legs down when low over the pad."""
+        w = self.reward_weights
+        distance = float(np.linalg.norm(np.subtract(state['position'], state['landing_pad_position'])))
+        speed = float(np.linalg.norm(state['linear_velocity']))
+        altitude, _, _, tilt, _ = local_frame(state)
+        over_pad = abs(float(state['landing_pad_distance'])) <= float(state['landing_pad_width']) / 2.0
+        low = math.exp(-max(altitude - FOOT_ALTITUDE, 0.0) / 50.0)
+        return (-w["distance"] * distance - w["speed"] * speed - w["tilt"] * abs(tilt)
+                + w["integrity"] * float(state['rocket_integrity'])
+                + w["legs"] * float(state['legs_extension']) * low * over_pad)
+
     def get_reward(self, state, obs, terminated, truncated):
+        """+100 for a landing, -100 for a crash, otherwise potential(state) - potential(previous state).
+
+        Potential-based shaping (as in Gymnasium's LunarLander): a step that brings the rocket closer to the
+        pad, slows it or rights it pays at once and moving away costs the same back, so the return of an
+        episode is the overall progress. A planner or agent with a short horizon sees which way to go; a
+        per-step penalty on distance pays off only over tens of seconds, so short-horizon planners hovered.
+        """
+        potential = self.potential(state)
+        reward, self._potential = potential - self._potential, potential
         if state.get('game_state') == 'victory':
             return 100.0
         if state.get('game_state') == 'crash':
             return -100.0
-        # Stay close to the pad, slow down, keep the hull intact.
-        distance = float(np.linalg.norm(np.subtract(state['position'], state['landing_pad_position'])))
-        speed = float(np.linalg.norm(state['linear_velocity']))
-        return float(-0.001 * distance - 0.01 * speed) * state['rocket_integrity']
+        return float(reward)
+
+    async def async_reset(self, seed=None, options=None):
+        obs, info = await super().async_reset(seed=seed, options=options)
+        self._potential = self.potential(self._last_state)
+        return obs, info
 
 
 gym.register(id="GRL/Landing-v0", entry_point="grl.env:GRLEnv")

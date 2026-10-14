@@ -63,7 +63,9 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
   `collect --policy grl.policies:demonstrator`).
   `examples/` has one runnable training script per RL library (SB3, RLlib, skrl, Tianshou, TorchRL,
   Gymnasium/CleanRL). Keep `info` keys identical on every step (Tianshou/TorchRL stack them) and don't add a
-  `compute_reward` method to envs (SB3 treats it as a GoalEnv); rewards go in `get_reward`.
+  `compute_reward` method to envs (SB3 treats it as a GoalEnv); rewards go in `get_reward`. `GRLEnv`'s reward is
+  potential-based (`potential(state)` difference per step, ±100 on landing/crash): a per-step distance penalty
+  made short-horizon planners hover instead of approaching the pad.
   A game launched with `-p` quits when its client disconnects (`Settings.launched_by_client`), so killed
   workers don't leave orphan processes.
   `python/utils.py` is only a back-compat shim for the example scripts. Tests in `tests/` use a fake
