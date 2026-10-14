@@ -54,7 +54,13 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
 - The Python side is the `grl/` package (repo root, `pip install -e .`): `client.py` (`GRL` async client,
   handshake, `step`, `set_seed`, `ignition` loop calling the user's `process(state)`), `process.py`
   (`GameProcess` launches/terminates the binary, `find_binary` honours `$GRL_BINARY`, `find_free_port`),
-  `env.py` (`GRLGym` base `gymnasium.Env` + ready-to-use `GRLEnv`, registered as `GRL/Landing-v0`).
+  `env.py` (`GRLGym` base `gymnasium.Env` + ready-to-use `GRLEnv`, registered as `GRL/Landing-v0`),
+  `render.py` (`render_mode="rgb_array"`: frames drawn with numpy/Pillow from the state dict, since the launched
+  game is headless; deterministic, camera follows the rocket with the local vertical up, HUD strip for pad
+  locator/propellant/integrity/legs; geometry constants copied from the scenes, keep them in sync),
+  `policies.py` (`ScriptedLander`, a state-based controller with physics constants copied from the GDScript, and
+  `demonstrator(env)` binding it to `env.last_state` for demonstration data, e.g. the world_model repo's
+  `collect --policy grl.policies:demonstrator`).
   `examples/` has one runnable training script per RL library (SB3, RLlib, skrl, Tianshou, TorchRL,
   Gymnasium/CleanRL). Keep `info` keys identical on every step (Tianshou/TorchRL stack them) and don't add a
   `compute_reward` method to envs (SB3 treats it as a GoalEnv); rewards go in `get_reward`.
@@ -63,7 +69,12 @@ There is no lint/test/build tooling configured in this repo (no GDScript linter;
   `python/utils.py` is only a back-compat shim for the example scripts. Tests in `tests/` use a fake
   server, so they do not exercise any GDScript.
 - The committed `GRL.exe` / `GRL.x86_64` / `GRL.pck` must be re-exported from Godot 4.7 after any GDScript
-  change; a stale binary never answers `hello` and the client raises with a "re-export" error.
+  change; a stale binary never answers `hello` and the client raises with a "re-export" error. Both executables
+  are Godot 4.7.2 *release* export templates with the `.pck` next to them: `GRL.x86_64` is the unmodified
+  `linux_release.x86_64` (what a Linux export without an embedded pck produces) and must stay executable in git
+  (mode 100755); `process.check_binary` adds a missing +x bit and rejects Git LFS pointers (`GRL.exe` is in LFS).
+  A binary from another Godot version cannot load the pck ("Pack version unsupported") and exits; `connect()`
+  then raises at once instead of retrying.
 
 ### Simulation core (scripts/)
 - `rocket.gd` (`RigidBody2D`): owns all rocket physics — thrust/RCS forces, propellant consumption and

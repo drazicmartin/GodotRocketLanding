@@ -8,7 +8,8 @@ from .client import GRL
 
 
 class GRLGym(gym.Env):
-    metadata = {"render_modes": ["human"]}
+    # One step is frame_skip physics ticks of 1/30 s; render_fps is adjusted per instance in __init__.
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
     def __init__(
             self,
@@ -20,12 +21,24 @@ class GRLGym(gym.Env):
             binary=None,
             render_mode=None,
             config=None,
+            render_size=128,
+            render_view=640.0,
         ):
         super().__init__()
         # Gymnasium convention: render_mode="human" means "show the game window" (Godot renders it itself).
+        # render_mode="rgb_array": render() returns a (render_size, render_size, 3) uint8 frame drawn from the
+        # state (grl/render.py), so pixel-based agents work with the usual headless game.
+        if render_mode is not None and render_mode not in self.metadata["render_modes"]:
+            raise ValueError(f"render_mode must be one of {self.metadata['render_modes']} or None")
         self.render_mode = render_mode
         if render_mode == "human":
             show_window = True
+        self.render_size = int(render_size)
+        self.render_view = float(render_view)
+        self.metadata = {**self.metadata, "render_fps": max(1, round(30 / max(1, frame_skip)))}
+        # Last state and the inputs that produced it, for render()
+        self._last_state = None
+        self._last_inputs = {}
 
         # Initialize the Godot environment. port=None picks a free port, so frameworks that create envs on
         # their own (SB3 SubprocVecEnv, RLlib workers, ...) never collide; an explicit port is offset by idx.
@@ -34,8 +47,9 @@ class GRLGym(gym.Env):
 
         self.setup_observation_space()
         self.async_env_started = False
-        # One private loop per env: asyncio.get_event_loop() no longer creates one implicitly
-        self._loop = asyncio.new_event_loop()
+        # One private loop per env (asyncio.get_event_loop() no longer creates one implicitly), created on
+        # first use and closed by close()
+        self._loop = None
         self.level_name = level_name
         self.frame_skip = frame_skip
 
@@ -61,21 +75,29 @@ class GRLGym(gym.Env):
             return legacy(state, obs, terminated, truncated)
         raise NotImplementedError
 
+    def _run(self, coroutine):
+        if self._loop is None:
+            self._loop = asyncio.new_event_loop()
+        return self._loop.run_until_complete(coroutine)
+
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         if not self.async_env_started:
-            self._loop.run_until_complete(self.async_start())
+            self._run(self.async_start())
             self.async_env_started = True
-        return self._loop.run_until_complete(self.async_reset(seed=seed, options=options))
+        return self._run(self.async_reset(seed=seed, options=options))
 
     def step(self, action):
-        return self._loop.run_until_complete(self.async_step(action))
+        return self._run(self.async_step(action))
 
     def close(self):
         if self.async_env_started:
-            self._loop.run_until_complete(self.async_close())
+            self._run(self.async_close())
             self.async_env_started = False
         self.env.close()
+        if self._loop is not None:
+            self._loop.close()
+            self._loop = None
 
     def state_to_observation(self, state):
         observation = []
@@ -112,6 +134,7 @@ class GRLGym(gym.Env):
             action = self.decode_action(action)
 
         state = await self.env.step(action, frame_skip=self.frame_skip)
+        self._last_state, self._last_inputs = state, action
 
         done = 'game_state' in state
         truncation = False
@@ -142,12 +165,25 @@ class GRLGym(gym.Env):
 
         # Get initial state
         state = await self.env.get_state()
+        self._last_state, self._last_inputs = state, {}
 
         obs = self.state_to_observation(state)
         return obs, self.state_to_info(state)
 
-    def render(self, mode="human"):
-        pass  # Rendering handled in Godot
+    @property
+    def last_state(self):
+        """Full state dict of the last reset() / step() (None before the first reset), e.g. for scripted experts."""
+        return self._last_state
+
+    def render(self, mode=None):
+        """RGB frame of the current state with render_mode="rgb_array"; None otherwise (Godot draws its window)."""
+        if self.render_mode != "rgb_array":
+            return None
+        if self._last_state is None:
+            raise RuntimeError("Call reset() before render()")
+        from .render import render_state  # Pillow is only needed for rgb_array rendering
+
+        return render_state(self._last_state, self._last_inputs, self.render_size, self.render_view)
 
     async def async_close(self):
         await self.env.stop()

@@ -12,7 +12,7 @@ In 2147, Earth’s orbital elevators collapsed during a solar storm, severing al
 ### Python usage
 ```bash
 # in your virtual env
-pip install -e .          # websockets, gymnasium, numpy
+pip install -e .          # websockets, gymnasium, numpy, pillow
 pip install -e .[train]   # + torch, tqdm, tensorboard (PPO example)
 
 python python/simple_landing.py
@@ -33,6 +33,28 @@ env.close()
 The binary is looked up in `$GRL_BINARY`, the repo root, then the current directory. Subclass `grl.GRLEnv`
 (override `get_reward`, `early_stop`, `decode_action`) for custom rewards or actions. The scripts in
 `python/` still work and import through `python/utils.py`.
+
+### Pixels (`render_mode="rgb_array"`)
+The game launched by Python runs headless, so `render_mode="rgb_array"` frames are drawn in Python from the
+state the game replies with (`grl/render.py`): the same state always gives the same image, and it works on
+servers without a display.
+```python
+env = gym.make("GRL/Landing-v0", render_mode="rgb_array", render_size=64)  # render_view=640.0 px across
+env.reset(seed=0)
+frame = env.render()   # (64, 64, 3) uint8
+```
+The camera follows the rocket with the local vertical pointing up: sky darkening with altitude, the planet
+surface (curved on small planets, striped so sideways motion shows), the landing pad (green once landed), the
+rocket with its legs, flames for the last inputs and an explosion on crash, and a magenta velocity marker. A HUD
+strip on top shows the pad direction/distance (white tick = rocket, cyan = pad) and propellant, integrity and
+legs bars; the right edge is a log-scale altitude gauge. `env.last_state` holds the full state of the last step.
+
+### Scripted lander and demonstrations
+`grl.policies.ScriptedLander` flies to the pad from the full state (`act(state)` returns a `GRLEnv` Box(4)
+action): with `frame_skip=5` it lands 28 of 30 random easy levels within 83 s. `noise=` adds exploration
+noise. `grl.policies.demonstrator(env, noise=0.1)` binds one to an env (`reset()`, `act(observation)`, the
+observation is ignored), e.g. to collect demonstration data for agents learning from pixels: random thrust
+mostly flies the rocket away and never shows a landing.
 
 ### Launch config (camera zoom, ...)
 The camera starts fully zoomed out (x0.40) and zooms with the mouse wheel in flight or the menu slider
@@ -61,7 +83,8 @@ end to end (short budgets) and launches one headless game per parallel env:
 
 Env contract: observation `Box(11,)` float32 (includes `landing_pad_distance`, `legs_extension`); action `Box(4,)` in `[-1, 1]`: three thrusters mapped to `(a+1)/2` plus a landing-legs command (`> 0` deploys)
 (or `Discrete(2)` with `discrete_actions=True`); `info` has the full state plus `game_state`
-(`running`/`victory`/`crash`) and `is_success` on every step; `render_mode="human"` shows the game window;
+(`running`/`victory`/`crash`) and `is_success` on every step; `render_mode="human"` shows the game window,
+`render_mode="rgb_array"` returns frames drawn from the state (see above);
 `port=None` (default) picks a free port. Sample Factory is not covered (no Windows support).
 
 ### Tests

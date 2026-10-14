@@ -3,6 +3,7 @@ import atexit
 import os
 import platform
 import socket
+import stat
 import subprocess
 from pathlib import Path
 from typing import Mapping, Optional
@@ -29,6 +30,20 @@ def find_binary() -> Path:
     )
 
 
+def check_binary(path: Path) -> None:
+    """Fail early on a Git LFS pointer, and make sure the binary is executable (git may drop the +x bit)."""
+    with open(path, "rb") as f:
+        head = f.read(64)
+    if head.startswith(b"version https://git-lfs"):
+        raise RuntimeError(
+            f"{path} is a Git LFS pointer, not the game: install git-lfs and run `git lfs pull` in the repo."
+        )
+    if os.name == "posix" and not os.access(path, os.X_OK):
+        mode = path.stat().st_mode
+        # give execute permission to whoever can read it
+        path.chmod(mode | ((mode & (stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)) >> 2))
+
+
 def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("127.0.0.1", 0))
@@ -41,7 +56,8 @@ class GameProcess:
     def __init__(self, port: int, show_window: bool = False, debug: bool = False,
                  binary: Optional[os.PathLike] = None, config: Optional["ConfigLike"] = None):
         self.port = port
-        self.binary = Path(binary) if binary else find_binary()
+        # absolute: the game is started from its own folder, a relative path would be searched in $PATH
+        self.binary = Path(binary).resolve() if binary else find_binary()
         self.show_window = show_window
         self.debug = debug
         self.config = config
@@ -49,6 +65,7 @@ class GameProcess:
         self.proc: Optional[subprocess.Popen] = None
 
     def start(self) -> None:
+        check_binary(self.binary)
         cmd = [str(self.binary), "-p", str(self.port)]
         if not self.show_window or platform.system() == "Linux":
             cmd.append("--headless")
@@ -65,6 +82,10 @@ class GameProcess:
         # Run from the binary's folder: the .pck sits next to it.
         self.proc = subprocess.Popen(cmd, cwd=self.binary.parent)
         atexit.register(self.terminate)
+
+    def exit_code(self) -> Optional[int]:
+        """Exit code once the game has exited, None while it runs (or was never started)."""
+        return None if self.proc is None else self.proc.poll()
 
     def terminate(self) -> None:
         if self.proc is not None and self.proc.poll() is None:
