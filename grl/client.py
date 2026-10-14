@@ -58,6 +58,13 @@ class GRL:
                 self.websocket = await websockets.connect(self.uri, open_timeout=60)
                 break
             except (ConnectionRefusedError, OSError):
+                exit_code = self.game.exit_code() if self.game is not None else None
+                if exit_code is not None:
+                    raise RuntimeError(
+                        f"The game exited (code {exit_code}) before accepting a connection on port {self.port}, "
+                        "see its output above. A binary that does not match GRL.pck (re-export it from Godot 4.7) "
+                        "fails this way."
+                    ) from None
                 if attempt == retries:
                     raise
                 await asyncio.sleep(delay)
@@ -102,7 +109,17 @@ class GRL:
         try:
             await self.quit_game()
         finally:
+            await self.disconnect()
             self.close()
+
+    async def disconnect(self, timeout: float = 2.0):
+        """Close the WebSocket (also stops its keepalive task, so no "Task was destroyed" warning at exit)."""
+        websocket, self.websocket = self.websocket, None
+        if websocket is not None:
+            try:
+                await asyncio.wait_for(websocket.close(), timeout)
+            except Exception:
+                pass  # the game may already be gone after "quit"
 
     def read_state(self, state: dict):
         # Vectors arrive as [x, y] lists; planet_mass is a scientific-notation string ("2e24").

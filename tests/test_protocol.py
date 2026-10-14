@@ -282,3 +282,101 @@ def test_config_file_is_written_and_passed(tmp_path, monkeypatch):
     cmd = launched["cmd"]
     cfg = Path(cmd[cmd.index("--config") + 1])
     assert "zoom=0.5" in cfg.read_text()
+
+
+def test_rgb_array_render_last_state_and_checker():
+    from gymnasium.utils.env_checker import check_env
+
+    with pytest.raises(ValueError, match="render_mode"):
+        GRLEnv(render_mode="rgb")
+    assert FakeLandingEnv(port=1).render() is None   # no render_mode: nothing to draw, nothing launched
+    port = start_in_thread(FakeGame(crash_after=10_000))
+    env = FakeLandingEnv(port=port, render_mode="rgb_array", render_size=48, frame_skip=2)
+    assert env.metadata["render_fps"] == 15 and GRLEnv.metadata["render_fps"] == 30
+    with pytest.raises(RuntimeError, match="reset"):
+        env.render()
+    check_env(env)
+    _, info = env.reset(seed=3)
+    assert env.last_state["position"] == info["position"]
+    idle = env.render()
+    assert idle.shape == (48, 48, 3) and idle.dtype == np.uint8
+    env.step(np.array([1.0, -1.0, -1.0, 1.0], dtype=np.float32))
+    assert env.last_state["num_frame_computed"] == 2
+    assert not np.array_equal(env.render(), idle)
+    env.close()
+
+
+def lander_state(**overrides):
+    state = fake_state(0)
+    state.update({"planet_mass": 4e18, "position": [0.0, -140.0], "linear_velocity": [0.0, 0.0],
+                  "mass": 9.9, "landing_pad_distance": 800.0, "legs_extension": 0.0, "legs_deployed": False})
+    state.update(overrides)
+    return state
+
+
+def test_scripted_lander():
+    from grl.policies import ScriptedLander, gravity, local_frame
+
+    # measured in level_1 (rocket 100 px above the default planet): 16.42 px/s^2
+    assert gravity(lander_state(position=[0.0, -100.0])) == pytest.approx(16.42, abs=0.01)
+    altitude, v_right, v_up, tilt, spin = local_frame(lander_state(linear_velocity=[3.0, -2.0], rotation=0.1))
+    assert (altitude, v_right, v_up, tilt) == pytest.approx((140.0, 3.0, 2.0, 0.1))
+    action = ScriptedLander().act(lander_state())
+    assert action.shape == (4,) and action.dtype == np.float32 and np.all(np.abs(action) <= 1)
+    assert action[1] > -1.0 and action[2] == -1.0 and action[3] == -1.0   # lean right towards the pad, legs up
+    assert -1.0 < action[0] < 0.0   # about a quarter of the thrust to hover
+    landed = lander_state(landing_pad_distance=5.0, left_leg_contact=True, right_leg_contact=True)
+    assert ScriptedLander().act(landed).tolist() == [-1.0, -1.0, -1.0, 1.0]
+    a, b = ScriptedLander(noise=0.3, seed=1), ScriptedLander(noise=0.3, seed=1)
+    assert all(np.array_equal(a.act(lander_state()), b.act(lander_state())) for _ in range(50))
+    with pytest.raises(ValueError):
+        ScriptedLander(noise=-1)
+
+
+def test_demonstrator_reads_the_env_state():
+    from grl.policies import demonstrator
+
+    with pytest.raises(ValueError, match="Box"):
+        demonstrator(FakeLandingEnv(port=1, discrete_actions=True))
+    port = start_in_thread(FakeGame(crash_after=10_000))
+    env = FakeLandingEnv(port=port)
+    policy = demonstrator(env, noise=0.0)
+    with pytest.raises(RuntimeError, match="reset"):
+        policy.act()
+    env.reset(seed=0)
+    policy.reset()
+    action = policy.act(np.zeros((8, 8, 3)))   # the observation is ignored
+    assert env.action_space.contains(action)
+    env.step(action)
+    env.close()
+
+
+def test_binary_checks_and_exited_game(tmp_path):
+    import os
+
+    from grl.process import check_binary
+
+    pointer = tmp_path / "GRL.exe"
+    pointer.write_text("version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n")
+    with pytest.raises(RuntimeError, match="git lfs pull"):
+        check_binary(pointer)
+    binary = tmp_path / "GRL.x86_64"
+    binary.write_bytes(b"\x7fELF")
+    binary.chmod(0o644)
+    check_binary(binary)
+    if os.name == "posix":
+        assert os.access(binary, os.X_OK)
+
+    class ExitedGame:
+        def exit_code(self):
+            return 1
+
+    async def go():
+        from grl.process import find_free_port
+
+        client = GRL(port=find_free_port())
+        client.game = ExitedGame()
+        with pytest.raises(RuntimeError, match="exited"):
+            await client.connect(retries=3, delay=0.01)
+
+    run(go())
