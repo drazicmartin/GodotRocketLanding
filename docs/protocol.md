@@ -41,3 +41,6 @@ Physics runs at 30 ticks per step of simulated time. Headless instances launched
 `--fixed-fps 30`, which makes Godot run frames back-to-back instead of waiting for real time (about 60x faster:
 ~900 steps/s vs ~15 measured on one instance). Windowed instances (`show_window=True`) stay real-time so you can
 watch them. The fixed step must stay equal to `1 / physics_ticks_per_second` (set in `set_scripted`).
+Without a frame cap the main loop also keeps spinning while the tree is paused between steps, so each headless
+instance keeps about one CPU core busy even while its client is busy computing (e.g. a planner taking seconds per
+step); budget cores for it when running many instances or a CPU-heavy client.
